@@ -1,0 +1,9 @@
+#map { height: 500px; }
+.eco-card:hover { transform: translateY(-5px); }
+.progress-bar { transition: width 0.5s ease-in-out; }
+.video-container { padding-bottom: 56.25%; position: relative; }
+.video-container > div { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.marker-cluster-small { background-color: rgba(110, 204, 57, 0.6); }
+.marker-cluster-medium { background-color: rgba(240, 194, 12, 0.6); }
+.marker-cluster-large { background-color: rgba(241, 128, 23, 0.6); }
+.marker-cluster-cleaned { background-color: rgba(23, 162, 184, 0.6); }
