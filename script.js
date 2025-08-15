@@ -137,6 +137,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 .addTo(map)
                 .bindPopup(`<b>${event.title}</b><br>${event.description}<br>Participants: ${event.participants}<br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>`);
         });
+
+        // Add layers to the map by default
+        trashLayer.addTo(map);
+        cleanedLayer.addTo(map);
+        plantingLayer.addTo(map);
+        eventsLayer.addTo(map);
+
+        // Layers control panel
+        L.control.layers(null, {
+        "Trash spots": trashLayer,
+        "Cleaned areas": cleanedLayer,
+        "Planting zones": plantingLayer,
+        "Events": eventsLayer
+        }, { collapsed: false }).addTo(map);
         
         L.circle([51.1900, 71.4000], {
             color: 'orange',
