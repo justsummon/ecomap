@@ -49,6 +49,12 @@ document.addEventListener('DOMContentLoaded', function() {
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+
+        // Create layers
+    const trashLayer = L.layerGroup();
+    const cleanedLayer = L.layerGroup();
+    const plantingLayer = L.layerGroup();
+    const eventsLayer = L.layerGroup();
         
         const trashIcon = L.icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
