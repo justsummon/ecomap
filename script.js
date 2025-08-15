@@ -110,6 +110,52 @@ document.addEventListener('DOMContentLoaded', function () {
             { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
         ];
 
+        // Create layer groups for each marker type
+        const trashLayer = L.layerGroup(trashSpots.map(spot =>
+            L.marker([spot.lat, spot.lng], { icon: icons.trash })
+                .bindPopup(`<b>${spot.title}</b><br>${spot.description}<br><span class="text-red-600">Severity: ${spot.severity}</span><br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">I'll Clean This</button>`)
+        ));
+
+        const cleanedLayer = L.layerGroup(cleanedAreas.map(area =>
+            L.marker([area.lat, area.lng], { icon: icons.cleaned })
+                .bindPopup(`<b>${area.title}</b><br>${area.description}<br>Volunteers: ${area.volunteers}<br><span class="text-green-600">Area Cleaned</span>`)
+        ));
+
+        const plantingLayer = L.layerGroup(plantingZones.map(zone =>
+            L.marker([zone.lat, zone.lng], { icon: icons.planting })
+                .bindPopup(`<b>${zone.title}</b><br>${zone.description}<br>Date: ${zone.date}<br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>`)
+        ));
+
+        const eventsLayer = L.layerGroup(events.map(event =>
+            L.marker([event.lat, event.lng], { icon: icons.event })
+                .bindPopup(`<b>${event.title}</b><br>${event.description}<br>Participants: ${event.participants}<br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>`)
+        ));
+
+        // Add all layers to map by default
+        trashLayer.addTo(map);
+        cleanedLayer.addTo(map);
+        plantingLayer.addTo(map);
+        eventsLayer.addTo(map);
+
+        // Function to toggle layer with checkbox
+        const toggleLayer = (checkboxId, layer) => {
+            const checkbox = document.getElementById(checkboxId);
+            if (!checkbox) return;
+            checkbox.addEventListener('change', function () {
+                if (this.checked) {
+                    layer.addTo(map);
+                } else {
+                    map.removeLayer(layer);
+                }
+            });
+        };
+
+        toggleLayer('chk-trash', trashLayer);
+        toggleLayer('chk-cleaned', cleanedLayer);
+        toggleLayer('chk-planting', plantingLayer);
+        toggleLayer('chk-events', eventsLayer);
+    }
+
         trashSpots.forEach(spot => {
             L.marker([spot.lat, spot.lng], { icon: trashIcon })
                 .addTo(map)
