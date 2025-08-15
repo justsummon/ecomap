@@ -51,10 +51,49 @@ document.addEventListener('DOMContentLoaded', function() {
         }).addTo(map);
 
         // Create layers
-    const trashLayer = L.layerGroup();
-    const cleanedLayer = L.layerGroup();
-    const plantingLayer = L.layerGroup();
-    const eventsLayer = L.layerGroup();
+        const trashLayer = L.layerGroup();
+        const cleanedLayer = L.layerGroup();
+        const plantingLayer = L.layerGroup();
+        const eventsLayer = L.layerGroup();
+
+        // Add all layers to the map by default
+        trashLayer.addTo(map);
+        cleanedLayer.addTo(map);
+        plantingLayer.addTo(map);
+        eventsLayer.addTo(map);
+
+        // Toggle layers based on checkboxes
+document.getElementById('toggleTrash').addEventListener('change', function () {
+    if (this.checked) {
+        map.addLayer(trashLayer);
+    } else {
+        map.removeLayer(trashLayer);
+    }
+});
+
+document.getElementById('toggleCleaned').addEventListener('change', function () {
+    if (this.checked) {
+        map.addLayer(cleanedLayer);
+    } else {
+        map.removeLayer(cleanedLayer);
+    }
+});
+
+document.getElementById('togglePlanting').addEventListener('change', function () {
+    if (this.checked) {
+        map.addLayer(plantingLayer);
+    } else {
+        map.removeLayer(plantingLayer);
+    }
+});
+
+document.getElementById('toggleEvents').addEventListener('change', function () {
+    if (this.checked) {
+        map.addLayer(eventsLayer);
+    } else {
+        map.removeLayer(eventsLayer);
+    }
+});
         
         const trashIcon = L.icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
