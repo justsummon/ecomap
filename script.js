@@ -155,25 +155,25 @@ document.getElementById('toggleEvents').addEventListener('change', function () {
         
         trashSpots.forEach(spot => {
             L.marker([spot.lat, spot.lng], { icon: trashIcon })
-                .addTo(map)
+                .addTo(trashLayer)
                 .bindPopup(`<b>${spot.title}</b><br>${spot.description}<br><span class="text-red-600">Severity: ${spot.severity}</span><br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">I'll Clean This</button>`);
         });
         
         cleanedAreas.forEach(area => {
             L.marker([area.lat, area.lng], { icon: cleanedIcon })
-                .addTo(map)
+                .addTo(cleanedLayer)
                 .bindPopup(`<b>${area.title}</b><br>${area.description}<br>Volunteers: ${area.volunteers}<br><span class="text-green-600">Area Cleaned</span>`);
         });
         
         plantingZones.forEach(zone => {
             L.marker([zone.lat, zone.lng], { icon: plantingIcon })
-                .addTo(map)
+                .addTo(plantingLayer)
                 .bindPopup(`<b>${zone.title}</b><br>${zone.description}<br>Date: ${zone.date}<br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>`);
         });
         
         events.forEach(event => {
             L.marker([event.lat, event.lng], { icon: eventIcon })
-                .addTo(map)
+                .addTo(eventsLayer)
                 .bindPopup(`<b>${event.title}</b><br>${event.description}<br>Participants: ${event.participants}<br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>`);
         });
 
