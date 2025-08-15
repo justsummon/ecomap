@@ -143,14 +143,6 @@ document.addEventListener('DOMContentLoaded', function() {
         cleanedLayer.addTo(map);
         plantingLayer.addTo(map);
         eventsLayer.addTo(map);
-
-        // Layers control panel
-        L.control.layers(null, {
-        "Trash spots": trashLayer,
-        "Cleaned areas": cleanedLayer,
-        "Planting zones": plantingLayer,
-        "Events": eventsLayer
-        }, { collapsed: false }).addTo(map);
         
         L.circle([51.1900, 71.4000], {
             color: 'orange',
