@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+<<<<<<< HEAD
     // ===== LANGUAGE FUNCTIONALITY =====
     const languageToggle = document.getElementById('language-toggle');
     const languageDropdown = document.getElementById('language-dropdown');
@@ -322,10 +323,13 @@ document.addEventListener('DOMContentLoaded', function () {
     changeLanguage(savedLanguage);
 
     // ===== EXISTING FUNCTIONALITY =====
+=======
+>>>>>>> 20bf4a2a3c350eb2bc4cf2082823f5ed86f80de9
     // Mobile menu toggle
     const menuToggle = document.getElementById('menu-toggle');
     const navMenu = document.getElementById('nav-menu');
 
+<<<<<<< HEAD
     if (menuToggle && navMenu) {
         menuToggle.addEventListener('click', () => {
             navMenu.classList.toggle('hidden');
@@ -384,6 +388,48 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+=======
+    menuToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('hidden');
+    });
+
+    // Back to top button
+    const backToTop = document.getElementById('back-to-top');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTop.classList.remove('hidden');
+        } else {
+            backToTop.classList.add('hidden');
+        }
+    });
+
+    backToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Check for saved user data
+    const userPoints = localStorage.getItem('ecoUserPoints') || 0;
+    document.querySelector('#user-points span').textContent = userPoints;
+
+    // Update progress bar if on rewards page
+    if (document.getElementById('progress-bar')) {
+        const progressPercentage = Math.min((userPoints / 500) * 100, 100);
+        document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
+    }
+
+    // Login button functionality
+    document.getElementById('login-btn').addEventListener('click', function () {
+        const newPoints = 100; // Starting bonus
+        localStorage.setItem('ecoUserPoints', newPoints);
+        document.querySelector('#user-points span').textContent = newPoints;
+        this.textContent = 'My Profile';
+
+        if (document.getElementById('progress-bar')) {
+            const newProgress = Math.min((newPoints / 500) * 100, 100);
+            document.getElementById('progress-bar').style.width = `${newProgress}%`;
+        }
+    });
+>>>>>>> 20bf4a2a3c350eb2bc4cf2082823f5ed86f80de9
 
     // Map initialization if on index page
     if (document.getElementById('map')) {
@@ -393,7 +439,10 @@ document.addEventListener('DOMContentLoaded', function () {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
+<<<<<<< HEAD
         // Create custom icons
+=======
+>>>>>>> 20bf4a2a3c350eb2bc4cf2082823f5ed86f80de9
         const trashIcon = L.icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -430,7 +479,10 @@ document.addEventListener('DOMContentLoaded', function () {
             shadowSize: [41, 41]
         });
 
+<<<<<<< HEAD
         // Add markers data
+=======
+>>>>>>> 20bf4a2a3c350eb2bc4cf2082823f5ed86f80de9
         const trashSpots = [
             { lat: 51.1475, lng: 71.4225, title: "Park Trash Accumulation", description: "Plastic bottles and food wrappers", severity: "Medium" },
             { lat: 51.1520, lng: 71.4380, title: "Alleyway Dumping", description: "Furniture and household waste", severity: "High" },
@@ -453,7 +505,11 @@ document.addEventListener('DOMContentLoaded', function () {
             { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
         ];
 
+<<<<<<< HEAD
         // Add markers to map - ОБНОВЛЕННЫЙ КОД ДЛЯ СЛАЙДЕРОВ
+=======
+        // Trash spots with slider popup
+>>>>>>> 20bf4a2a3c350eb2bc4cf2082823f5ed86f80de9
         trashSpots.forEach(spot => {
             L.marker([spot.lat, spot.lng], { icon: trashIcon })
                 .addTo(map)
@@ -464,6 +520,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     <!-- Before/After slider -->
                     <div class="before-after-container">
+<<<<<<< HEAD
                         <div class="before-image">
                             <img src="https://via.placeholder.com/250x150/ff0000/ffffff?text=Dirty+Area" alt="Before cleanup" />
                         </div>
@@ -475,6 +532,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     
                     <div class="mt-2 text-xs text-gray-500">
                         Drag slider to see before/after comparison
+=======
+                      <div class="before-image">
+                        <img src="dirty.jpg" alt="Before" />
+                      </div>
+                      <div class="after-image">
+                        <img src="clean.jpg" alt="After" />
+                      </div>
+                      <input type="range" min="0" max="100" value="50" class="slider" />
+>>>>>>> 20bf4a2a3c350eb2bc4cf2082823f5ed86f80de9
                     </div>
                 `);
         });
@@ -497,7 +563,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 .bindPopup(`<b>${event.title}</b><br>${event.description}<br>Participants: ${event.participants}<br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>`);
         });
 
+<<<<<<< HEAD
         // Add circles
+=======
+>>>>>>> 20bf4a2a3c350eb2bc4cf2082823f5ed86f80de9
         L.circle([51.1900, 71.4000], {
             color: 'orange',
             fillColor: 'yellow',
@@ -515,9 +584,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Challenge button functionality if on knowledge page
     if (document.getElementById('knowledge')) {
+<<<<<<< HEAD
         const challengeBtn = document.querySelector('#knowledge button');
         if (challengeBtn) {
             challengeBtn.addEventListener('click', function () {
+=======
+        document.querySelector('#knowledge button').addEventListener('click', function () {
+            const currentPoints = parseInt(localStorage.getItem('ecoUserPoints') || 0);
+            const newPoints = currentPoints + 25;
+            localStorage.setItem('ecoUserPoints', newPoints);
+            document.querySelector('#user-points span').textContent = newPoints;
+
+            this.innerHTML = '<i class="fas fa-check mr-2"></i> Challenge Completed!';
+            this.classList.remove('bg-green-600', 'hover:bg-green-700');
+            this.classList.add('bg-gray-400', 'cursor-not-allowed');
+            this.disabled = true;
+        });
+
+        // Quiz answer
+        document.querySelector('#quiz-container button').addEventListener('click', function () {
+            const selected = document.querySelector('input[name="quiz"]:checked');
+            if (selected && selected.parentElement.textContent.trim().startsWith('9%')) {
+                alert('Correct! Only about 9% of plastic waste is recycled globally.');
+>>>>>>> 20bf4a2a3c350eb2bc4cf2082823f5ed86f80de9
                 const currentPoints = parseInt(localStorage.getItem('ecoUserPoints') || 0);
                 const newPoints = currentPoints + 25;
                 localStorage.setItem('ecoUserPoints', newPoints);
@@ -558,9 +647,16 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('slider')) {
             const afterImg = e.target.parentElement.querySelector('.after-image');
+<<<<<<< HEAD
             if (afterImg) {
                 afterImg.style.clipPath = `inset(0 0 0 ${e.target.value}%)`;
             }
         }
     });
 });
+=======
+            afterImg.style.clipPath = `inset(0 0 0 ${e.target.value}%)`;
+        }
+    });
+});
+>>>>>>> 20bf4a2a3c350eb2bc4cf2082823f5ed86f80de9
