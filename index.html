@@ -9,6 +9,33 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+
+    <style>
+    .before-after-container {
+      position: relative;
+      width: 250px;
+      height: 150px;
+      overflow: hidden;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+    .before-after-container img {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .after-image {
+      clip-path: inset(0 0 0 50%);
+    }
+    .slider {
+      position: absolute;
+      bottom: 5px; left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      z-index: 10;
+    }
+    </style>
 </head>
 <body class="bg-green-50">
     <!-- Header -->
@@ -25,18 +52,29 @@
                     </button>
                 </div>
                 <nav id="nav-menu" class="flex-col md:flex-row flex space-y-2 md:space-y-0 md:space-x-6 hidden md:flex mt-4 md:mt-0 w-full md:w-auto">
-                    <a href="index.html" class="px-3 py-2 rounded hover:bg-green-700 transition">Home</a>
-                    <a href="rewards.html" class="px-3 py-2 rounded hover:bg-green-700 transition">Rewards</a>
-                    <a href="knowledge.html" class="px-3 py-2 rounded hover:bg-green-700 transition">Eco-Knowledge</a>
-                    <a href="community.html" class="px-3 py-2 rounded hover:bg-green-700 transition">Community</a>
+                    <a href="index.html" class="px-3 py-2 rounded hover:bg-green-700 transition" data-translate="home">Home</a>
+                    <a href="rewards.html" class="px-3 py-2 rounded hover:bg-green-700 transition" data-translate="rewards">Rewards</a>
+                    <a href="knowledge.html" class="px-3 py-2 rounded hover:bg-green-700 transition" data-translate="knowledge">Eco-Knowledge</a>
+                    <a href="community.html" class="px-3 py-2 rounded hover:bg-green-700 transition" data-translate="community">Community</a>
                 </nav>
                 <div class="flex items-center mt-4 md:mt-0">
                     <div id="user-points" class="bg-green-800 px-4 py-2 rounded-full font-semibold mr-4">
                         <i class="fas fa-coins mr-2"></i><span>0</span> pts
                     </div>
-                    <button id="login-btn" class="bg-white text-green-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition">
+                    <button id="login-btn" class="bg-white text-green-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition" data-translate="signin">
                         Sign In
                     </button>
+                    <div class="ml-4 relative">
+                        <button id="language-toggle" class="flex items-center text-white">
+                            <i class="fas fa-globe mr-2"></i>
+                            <span id="current-language">EN</span>
+                        </button>
+                        <div id="language-dropdown" class="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg hidden z-20">
+                            <button data-lang="en" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-100">English</button>
+                            <button data-lang="ru" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Русский</button>
+                            <button data-lang="kz" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Қазақша</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -45,14 +83,16 @@
     <!-- Hero Section -->
     <section class="bg-gradient-to-r from-green-500 to-green-700 text-white py-16 pt-32">
         <div class="container mx-auto px-4 text-center">
-            <h2 class="text-4xl md:text-5xl font-bold mb-6">Join the Green Revolution</h2>
-            <p class="text-xl mb-8 max-w-2xl mx-auto">Track environmental issues, participate in cleanups, earn rewards, and make your community cleaner and greener!</p>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6" data-translate="join-revolution">Join the Green Revolution</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto" data-translate="hero-text">Track environmental issues, participate in cleanups, earn rewards, and make your community cleaner and greener!</p>
             <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-6">
-                <button class="bg-white text-green-800 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition">
-                    <i class="fas fa-map-marked-alt mr-2"></i> Explore Map
-                </button>
+                <a href="map.html" class="bg-white text-green-800 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition">
+                    <i class="fas fa-map-marked-alt mr-2"></i> 
+                    <span data-translate="explore-map">Explore Map</span>
+                </a>
                 <button class="bg-transparent border-2 border-white px-8 py-3 rounded-full font-bold hover:bg-white hover:text-green-800 transition">
-                    <i class="fas fa-plus-circle mr-2"></i> Report Issue
+                    <i class="fas fa-plus-circle mr-2"></i> 
+                    <span data-translate="report-issue">Report Issue</span>
                 </button>
             </div>
         </div>
@@ -61,49 +101,49 @@
     <!-- Map Section -->
     <section id="map-section" class="py-16 bg-white">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center mb-12 text-green-800">Interactive Eco Map</h2>
+            <h2 class="text-3xl font-bold text-center mb-12 text-green-800" data-translate="interactive-map">Interactive Eco Map</h2>
             
             <div class="flex flex-col lg:flex-row gap-8">
                 <!-- Map Controls -->
                 <div class="w-full lg:w-1/4 bg-green-100 p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-semibold mb-4 text-green-800">Map Filters</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-green-800" data-translate="map-filters">Map Filters</h3>
                     
                     <div class="space-y-4">
                         <div class="flex items-center">
                             <input type="checkbox" id="trash-spots" class="mr-3 h-5 w-5" checked>
-                            <label for="trash-spots" class="text-green-800">Trash Spots</label>
+                            <label for="trash-spots" class="text-green-800" data-translate="trash-spots">Trash Spots</label>
                         </div>
                         <div class="flex items-center">
                             <input type="checkbox" id="cleaned-areas" class="mr-3 h-5 w-5" checked>
-                            <label for="cleaned-areas" class="text-green-800">Cleaned Areas</label>
+                            <label for="cleaned-areas" class="text-green-800" data-translate="cleaned-areas">Cleaned Areas</label>
                         </div>
                         <div class="flex items-center">
                             <input type="checkbox" id="planting-zones" class="mr-3 h-5 w-5" checked>
-                            <label for="planting-zones" class="text-green-800">Planting Zones</label>
+                            <label for="planting-zones" class="text-green-800" data-translate="planting-zones">Planting Zones</label>
                         </div>
                         <div class="flex items-center">
                             <input type="checkbox" id="polluted-zones" class="mr-3 h-5 w-5" checked>
-                            <label for="polluted-zones" class="text-green-800">Polluted Zones</label>
+                            <label for="polluted-zones" class="text-green-800" data-translate="polluted-zones">Polluted Zones</label>
                         </div>
                         <div class="flex items-center">
                             <input type="checkbox" id="events" class="mr-3 h-5 w-5" checked>
-                            <label for="events" class="text-green-800">Upcoming Events</label>
+                            <label for="events" class="text-green-800" data-translate="upcoming-events">Upcoming Events</label>
                         </div>
                     </div>
                     
                     <hr class="my-6 border-green-200">
                     
-                    <h3 class="text-xl font-semibold mb-4 text-green-800">Report an Issue</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-green-800" data-translate="report-an-issue">Report an Issue</h3>
                     <select class="w-full p-3 rounded border border-green-300 mb-3">
-                        <option>Select issue type</option>
-                        <option>Trash accumulation</option>
-                        <option>Illegal dumping</option>
-                        <option>Polluted water</option>
-                        <option>Other</option>
+                        <option data-translate="select-issue-type">Select issue type</option>
+                        <option data-translate="trash-accumulation">Trash accumulation</option>
+                        <option data-translate="illegal-dumping">Illegal dumping</option>
+                        <option data-translate="polluted-water">Polluted water</option>
+                        <option data-translate="other">Other</option>
                     </select>
-                    <textarea class="w-full p-3 rounded border border-green-300 mb-3" placeholder="Add description..."></textarea>
+                    <textarea class="w-full p-3 rounded border border-green-300 mb-3" data-translate-placeholder="add-description" placeholder="Add description..."></textarea>
                     <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
-                        <i class="fas fa-paper-plane mr-2"></i> Submit Report
+                        <i class="fas fa-paper-plane mr-2"></i> <span data-translate="submit-report">Submit Report</span>
                     </button>
                 </div>
                 
@@ -114,23 +154,23 @@
                     <div class="mt-4 flex flex-wrap gap-2 justify-center">
                         <div class="flex items-center">
                             <div class="w-4 h-4 rounded-full bg-red-500 mr-2"></div>
-                            <span class="text-sm">Trash Spots</span>
+                            <span class="text-sm" data-translate="trash-spots">Trash Spots</span>
                         </div>
                         <div class="flex items-center">
                             <div class="w-4 h-4 rounded-full bg-blue-500 mr-2"></div>
-                            <span class="text-sm">Cleaned Areas</span>
+                            <span class="text-sm" data-translate="cleaned-areas">Cleaned Areas</span>
                         </div>
                         <div class="flex items-center">
                             <div class="w-4 h-4 rounded-full bg-green-500 mr-2"></div>
-                            <span class="text-sm">Planting Zones</span>
+                            <span class="text-sm" data-translate="planting-zones">Planting Zones</span>
                         </div>
                         <div class="flex items-center">
                             <div class="w-4 h-4 rounded-full bg-yellow-500 mr-2"></div>
-                            <span class="text-sm">Polluted Zones</span>
+                            <span class="text-sm" data-translate="polluted-zones">Polluted Zones</span>
                         </div>
                         <div class="flex items-center">
                             <div class="w-4 h-4 rounded-full bg-purple-500 mr-2"></div>
-                            <span class="text-sm">Events</span>
+                            <span class="text-sm" data-translate="upcoming-events">Events</span>
                         </div>
                     </div>
                 </div>
@@ -149,37 +189,37 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
                     <h3 class="text-xl font-bold mb-4">EcoMap</h3>
-                    <p class="text-green-200">Connecting communities for a cleaner, greener planet.</p>
+                    <p class="text-green-200" data-translate="footer-tagline">Connecting communities for a cleaner, greener planet.</p>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <h4 class="font-semibold mb-4" data-translate="quick-links">Quick Links</h4>
                     <ul class="space-y-2">
-                        <li><a href="#" class="text-green-200 hover:text-white transition">About Us</a></li>
-                        <li><a href="#" class="text-green-200 hover:text-white transition">How It Works</a></li>
-                        <li><a href="#" class="text-green-200 hover:text-white transition">Success Stories</a></li>
-                        <li><a href="#" class="text-green-200 hover:text-white transition">Get Involved</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="about-us">About Us</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="how-it-works">How It Works</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="success-stories">Success Stories</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="get-involved">Get Involved</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4">Resources</h4>
+                    <h4 class="font-semibold mb-4" data-translate="resources">Resources</h4>
                     <ul class="space-y-2">
-                        <li><a href="knowledge.html" class="text-green-200 hover:text-white transition">Eco Tips</a></li>
-                        <li><a href="#" class="text-green-200 hover:text-white transition">Recycling Guide</a></li>
-                        <li><a href="#" class="text-green-200 hover:text-white transition">Volunteer Handbook</a></li>
-                        <li><a href="#" class="text-green-200 hover:text-white transition">Partner With Us</a></li>
+                        <li><a href="knowledge.html" class="text-green-200 hover:text-white transition" data-translate="eco-tips">Eco Tips</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="recycling-guide">Recycling Guide</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="volunteer-handbook">Volunteer Handbook</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="partner-with-us">Partner With Us</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4">Connect</h4>
+                    <h4 class="font-semibold mb-4" data-translate="connect">Connect</h4>
                     <div class="flex space-x-4 mb-4">
                         <a href="#" class="text-green-200 hover:text-white text-xl transition"><i class="fab fa-facebook"></i></a>
                         <a href="#" class="text-green-200 hover:text-white text-xl transition"><i class="fab fa-twitter"></i></a>
                         <a href="#" class="text-green-200 hover:text-white text-xl transition"><i class="fab fa-instagram"></i></a>
                         <a href="#" class="text-green-200 hover:text-white text-xl transition"><i class="fab fa-youtube"></i></a>
                     </div>
-                    <p class="text-green-200">Subscribe to our newsletter</p>
+                    <p class="text-green-200" data-translate="subscribe-newsletter">Subscribe to our newsletter</p>
                     <div class="mt-2 flex">
-                        <input type="email" placeholder="Your email" class="px-3 py-2 rounded-l text-gray-800 w-full">
+                        <input type="email" data-translate-placeholder="your-email" placeholder="Your email" class="px-3 py-2 rounded-l text-gray-800 w-full">
                         <button class="bg-green-600 px-4 py-2 rounded-r hover:bg-green-700 transition">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -188,7 +228,7 @@
             </div>
             <hr class="border-green-700 my-8">
             <div class="text-center text-green-200 text-sm">
-                <p>© 2025 EcoMap. All rights reserved. | <a href="#" class="hover:text-white transition">Privacy Policy</a> | <a href="#" class="hover:text-white transition">Terms of Service</a></p>
+                <p>© 2025 EcoMap. All rights reserved. | <a href="#" class="hover:text-white transition" data-translate="privacy-policy">Privacy Policy</a> | <a href="#" class="hover:text-white transition" data-translate="terms-of-service">Terms of Service</a></p>
             </div>
         </div>
     </footer>
