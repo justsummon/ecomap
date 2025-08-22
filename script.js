@@ -110,38 +110,33 @@ document.addEventListener('DOMContentLoaded', function () {
             { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
         ];
 
-        
+        // Trash spots with slider popup
         trashSpots.forEach(spot => {
-    L.marker([spot.lat, spot.lng], { icon: trashIcon })
-        .addTo(map)
-        .bindPopup(`
-            <b>${spot.title}</b><br>
-            ${spot.description}<br>
-            <span class="text-red-600">Severity: ${spot.severity}</span>
-        `);
-});
-         //Cleaned Areas with slider
-        cleanedAreas.forEach(area => {
-    L.marker([area.lat, area.lng], { icon: cleanedIcon })
-        .addTo(map)
-        .bindPopup(`
-            <b>${area.title}</b><br>
-            ${area.description}<br>
-            Volunteers: ${area.volunteers}<br>
-            <span class="text-green-600">Area Cleaned</span><br><br>
+            L.marker([spot.lat, spot.lng], { icon: trashIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <b>${spot.title}</b><br>
+                    ${spot.description}<br>
+                    <span class="text-red-600">Severity: ${spot.severity}</span><br>
 
-            <!-- Before/After slider -->
-            <div class="before-after-container">
-              <div class="before-image">
-                <img src="dirty.jpg" alt="Before" />
-              </div>
-              <div class="after-image">
-                <img src="clean.jpg" alt="After" />
-              </div>
-              <input type="range" min="0" max="100" value="50" class="slider" />
-            </div>
-        `);
-});
+                    <!-- Before/After slider -->
+                    <div class="before-after-container">
+                      <div class="before-image">
+                        <img src="dirty.jpg" alt="Before" />
+                      </div>
+                      <div class="after-image">
+                        <img src="clean.jpg" alt="After" />
+                      </div>
+                      <input type="range" min="0" max="100" value="50" class="slider" />
+                    </div>
+                `);
+        });
+
+        cleanedAreas.forEach(area => {
+            L.marker([area.lat, area.lng], { icon: cleanedIcon })
+                .addTo(map)
+                .bindPopup(`<b>${area.title}</b><br>${area.description}<br>Volunteers: ${area.volunteers}<br><span class="text-green-600">Area Cleaned</span>`);
+        });
 
         plantingZones.forEach(zone => {
             L.marker([zone.lat, zone.lng], { icon: plantingIcon })
@@ -200,9 +195,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Slider logic for "before/after" images
-document.addEventListener('input', function(e) {
-    if (e.target.classList.contains('slider')) {
-        const afterImg = e.target.parentElement.querySelector('.after-image');
-        afterImg.style.clipPath = `inset(0 0 0 ${e.target.value}%)`;
-    }
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('slider')) {
+            const afterImg = e.target.parentElement.querySelector('.after-image');
+            afterImg.style.clipPath = `inset(0 0 0 ${e.target.value}%)`;
+        }
+    });
 });
