@@ -110,10 +110,26 @@ document.addEventListener('DOMContentLoaded', function () {
             { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
         ];
 
+        // Trash spots with slider popup
         trashSpots.forEach(spot => {
             L.marker([spot.lat, spot.lng], { icon: trashIcon })
                 .addTo(map)
-                .bindPopup(`<b>${spot.title}</b><br>${spot.description}<br><span class="text-red-600">Severity: ${spot.severity}</span><br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">I'll Clean This</button>`);
+                .bindPopup(`
+                    <b>${spot.title}</b><br>
+                    ${spot.description}<br>
+                    <span class="text-red-600">Severity: ${spot.severity}</span><br>
+
+                    <!-- Before/After slider -->
+                    <div class="before-after-container">
+                      <div class="before-image">
+                        <img src="dirty.jpg" alt="Before" />
+                      </div>
+                      <div class="after-image">
+                        <img src="clean.jpg" alt="After" />
+                      </div>
+                      <input type="range" min="0" max="100" value="50" class="slider" />
+                    </div>
+                `);
         });
 
         cleanedAreas.forEach(area => {
@@ -177,4 +193,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // Slider logic for "before/after" images
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('slider')) {
+            const afterImg = e.target.parentElement.querySelector('.after-image');
+            afterImg.style.clipPath = `inset(0 0 0 ${e.target.value}%)`;
+        }
+    });
 });
