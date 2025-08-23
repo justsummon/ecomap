@@ -19,7 +19,6 @@
 .eco-pin--planting { background:#22c55e; }  /* green */
 .eco-pin--polluted { background:#eab308; }  /* yellow */
 .eco-pin--events   { background:#8b5cf6; }  /* purple */
-<<<<<<< HEAD
 
 .before-after-container {
   position: relative;
@@ -70,5 +69,3 @@
   border: 2px solid white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-=======
->>>>>>> 20bf4a2a3c350eb2bc4cf2082823f5ed86f80de9
