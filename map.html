@@ -16,6 +16,8 @@
             height: 150px;
             overflow: hidden;
             border-radius: 8px;
+            margin: 10px 0;
+            border: 2px solid #e5e7eb;
         }
         .before-after-container img {
             position: absolute;
@@ -28,9 +30,34 @@
         }
         .slider {
             position: absolute;
-            bottom: 5px; left: 50%;
+            bottom: 10px; left: 50%;
             transform: translateX(-50%);
-            width: 80%;
+            width: 90%;
+            height: 15px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            -webkit-appearance: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #16a34a;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #16a34a;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .map-controls {
             position: fixed;
@@ -197,15 +224,43 @@
                 { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
             ];
 
-            // Add markers to map
+            // Add markers to map with before/after sliders for trash spots
             trashSpots.forEach(spot => {
-                L.marker([spot.lat, spot.lng], { icon: trashIcon })
+                const marker = L.marker([spot.lat, spot.lng], { icon: trashIcon })
                     .addTo(map)
                     .bindPopup(`
                         <b>${spot.title}</b><br>
                         ${spot.description}<br>
                         <span class="text-red-600">Severity: ${spot.severity}</span>
+                        
+                        <!-- Before/After slider -->
+                        <div class="before-after-container">
+                            <div class="before-image">
+                                <img src="https://via.placeholder.com/250x150/ff0000/ffffff?text=Dirty+Area" alt="Before cleanup" />
+                            </div>
+                            <div class="after-image">
+                                <img src="https://via.placeholder.com/250x150/00ff00/ffffff?text=Clean+Area" alt="After cleanup" />
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="slider" />
+                        </div>
+                        
+                        <div class="mt-2 text-xs text-gray-500">
+                            Drag slider to see before/after comparison
+                        </div>
                     `);
+                    
+                // Add event listener for slider when popup opens
+                marker.on('popupopen', function() {
+                    const slider = document.querySelector('.leaflet-popup-content .slider');
+                    if (slider) {
+                        slider.addEventListener('input', function(e) {
+                            const afterImg = e.target.parentElement.querySelector('.after-image');
+                            if (afterImg) {
+                                afterImg.style.clipPath = `inset(0 0 0 ${e.target.value}%)`;
+                            }
+                        });
+                    }
+                });
             });
 
             cleanedAreas.forEach(area => {
