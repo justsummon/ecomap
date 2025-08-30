@@ -455,34 +455,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Add markers to map - ОБНОВЛЕННЫЙ КОД ДЛЯ СЛАЙДЕРОВ
         trashSpots.forEach(spot => {
-            L.marker([spot.lat, spot.lng], { icon: trashIcon })
-                .addTo(map)
-                .bindPopup(`
-                    <b>${spot.title}</b><br>
-                    ${spot.description}<br>
-                    <span class="text-red-600">Severity: ${spot.severity}</span><br>
-
-                    <!-- Before/After slider -->
-                    <div class="before-after-container">
-                        <div class="before-image">
-                            <img src="https://via.placeholder.com/250x150/ff0000/ffffff?text=Dirty+Area" alt="Before cleanup" />
-                        </div>
-                        <div class="after-image">
-                            <img src="https://via.placeholder.com/250x150/00ff00/ffffff?text=Clean+Area" alt="After cleanup" />
-                        </div>
-                        <input type="range" min="0" max="100" value="50" class="slider" />
-                    </div>
-                    
-                    <div class="mt-2 text-xs text-gray-500">
-                        Drag slider to see before/after comparison
-                    </div>
-                `);
+L.marker([spot.lat, spot.lng], { icon: trashIcon })
+.addTo(map)
+.bindPopup(`
+<b>${spot.title}</b><br>
+${spot.description}<br>
+<span class="text-red-600">Severity: ${spot.severity}</span>
+`);
         });
 
         cleanedAreas.forEach(area => {
-            L.marker([area.lat, area.lng], { icon: cleanedIcon })
-                .addTo(map)
-                .bindPopup(`<b>${area.title}</b><br>${area.description}<br>Volunteers: ${area.volunteers}<br><span class="text-green-600">Area Cleaned</span>`);
+L.marker([area.lat, area.lng], { icon: cleanedIcon })
+.addTo(map)
+.bindPopup(`
+<b>${area.title}</b><br>
+${area.description}<br>
+Volunteers: ${area.volunteers}<br>
+<span class="text-green-600">Area Cleaned</span><br>
+
+
+<!-- Before/After slider -->
+<div class="before-after-container">
+<div class="before-image">
+<img src="https://via.placeholder.com/250x150/ff0000/ffffff?text=Before+Cleanup" alt="Before cleanup" />
+</div>
+<div class="after-image">
+<img src="https://via.placeholder.com/250x150/00ff00/ffffff?text=After+Cleanup" alt="After cleanup" />
+</div>
+<input type="range" min="0" max="100" value="50" class="slider" />
+</div>
+<div class="mt-2 text-xs text-gray-500">
+Drag slider to see before/after comparison
+</div>
+`);
         });
 
         plantingZones.forEach(zone => {
