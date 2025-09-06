@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoMap - Interactive Map</title>
+    <title>EcoMap - Interactive Map with Navigation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <!-- Leaflet Routing Machine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     <style>
         .before-after-container {
             position: relative;
@@ -61,7 +63,7 @@
         }
         .map-controls {
             position: fixed;
-            top: 120px;
+            top: 160px; /* Подвинули ниже для казахского языка */
             right: 20px;
             z-index: 1000;
             background: white;
@@ -69,6 +71,39 @@
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             width: 280px;
+        }
+        .route-info-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 320px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .navigation-controls {
+            position: fixed;
+            top: 120px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .leaflet-routing-container {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -119,6 +154,31 @@
     <section id="map-section" class="pt-32 h-screen">
         <div id="fullscreen-map" class="h-full w-full"></div>
         
+        <!-- Navigation Controls -->
+        <div class="navigation-controls">
+            <h3 class="text-lg font-semibold mb-2 text-green-800" data-translate="navigation">Navigation</h3>
+            <button id="locate-me-btn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition flex items-center">
+                <i class="fas fa-location-arrow mr-2"></i> 
+                <span data-translate="my-location">My Location</span>
+            </button>
+            <button id="start-navigation-btn" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition flex items-center">
+                <i class="fas fa-route mr-2"></i> 
+                <span data-translate="start-navigation">Start Navigation</span>
+            </button>
+            <button id="clear-route-btn" class="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition flex items-center">
+                <i class="fas fa-times mr-2"></i> 
+                <span data-translate="clear-route">Clear Route</span>
+            </button>
+        </div>
+        
+        <!-- Route Info Panel -->
+        <div id="route-info-panel" class="route-info-panel hidden">
+            <h4 class="font-semibold mb-2" data-translate="route-information">Route Information</h4>
+            <div id="route-distance" data-translate="distance">Distance: -</div>
+            <div id="route-time" data-translate="time">Time: -</div>
+            <div id="route-instructions" class="mt-2 text-sm"></div>
+        </div>
+        
         <!-- Map Controls Overlay - FIXED POSITION -->
         <div class="map-controls">
             <h3 class="text-lg font-semibold mb-3 text-green-800" data-translate="map-filters">Map Filters</h3>
@@ -154,15 +214,247 @@
         </div>
     </section>
 
-    <script src="script.js"></script>
     <script>
-        // Initialize fullscreen map with markers
+        // Translation dictionary
+        const translations = {
+            en: {
+                // Navigation
+                "navigation": "Navigation",
+                "my-location": "My Location",
+                "start-navigation": "Start Navigation",
+                "clear-route": "Clear Route",
+                "route-information": "Route Information",
+                "distance": "Distance: -",
+                "time": "Time: -",
+                "navigate-here": "Navigate Here",
+                "your-location": "Your location",
+                "destination": "Destination",
+                
+                // Map Filters
+                "map-filters": "Map Filters",
+                "trash-spots": "Trash Spots",
+                "cleaned-areas": "Cleaned Areas",
+                "planting-zones": "Planting Zones",
+                "polluted-zones": "Polluted Zones",
+                "upcoming-events": "Upcoming Events",
+                "report-an-issue": "Report an Issue",
+                "report-issue": "Report Issue",
+                
+                // Messages
+                "location-permission": "EcoMap would like to use your location to provide navigation. Allow?",
+                "need-destination": "Please set a destination first by clicking on the map or a marker.",
+                "location-error": "Unable to get your location. Please check your location settings.",
+                "geolocation-error": "Geolocation is not supported by your browser.",
+                
+                // Route instructions
+                "head": "Head",
+                "continue": "Continue",
+                "turn-left": "Turn left",
+                "turn-right": "Turn right",
+                "keep-left": "Keep left",
+                "keep-right": "Keep right",
+                "roundabout": "At roundabout, take exit",
+                "onto": "onto",
+                "destination-reached": "You have arrived at your destination",
+                
+                // Directions
+                "north": "north",
+                "south": "south", 
+                "east": "east",
+                "west": "west",
+                "northeast": "northeast",
+                "northwest": "northwest",
+                "southeast": "southeast",
+                "southwest": "southwest",
+                
+                // Other UI elements
+                "home": "Home",
+                "rewards": "Rewards",
+                "knowledge": "Eco-Knowledge",
+                "community": "Community",
+                "signin": "Sign In"
+            },
+            ru: {
+                // Navigation
+                "navigation": "Навигация",
+                "my-location": "Мое местоположение",
+                "start-navigation": "Начать навигацию",
+                "clear-route": "Очистить маршрут",
+                "route-information": "Информация о маршруте",
+                "distance": "Расстояние: -",
+                "time": "Время: -",
+                "navigate-here": "Проложить маршрут",
+                "your-location": "Ваше местоположение",
+                "destination": "Место назначения",
+                
+                // Map Filters
+                "map-filters": "Фильтры карты",
+                "trash-spots": "Мусорные точки",
+                "cleaned-areas": "Очищенные зоны",
+                "planting-zones": "Зоны посадки",
+                "polluted-zones": "Загрязненные зоны",
+                "upcoming-events": "Предстоящие события",
+                "report-an-issue": "Сообщить о проблеме",
+                "report-issue": "Сообщить о проблеме",
+                
+                // Messages
+                "location-permission": "EcoMap хотел бы использовать ваше местоположение для навигации. Разрешить?",
+                "need-destination": "Пожалуйста, сначала установите пункт назначения, нажав на карту или маркер.",
+                "location-error": "Не удалось определить ваше местоположение. Проверьте настройки геолокации.",
+                "geolocation-error": "Ваш браузер не поддерживает геолокацию.",
+                
+                // Route instructions
+                "head": "Двигайтесь",
+                "continue": "Продолжайте движение",
+                "turn-left": "Поверните налево",
+                "turn-right": "Поверните направо",
+                "keep-left": "Держитесь левее",
+                "keep-right": "Держитесь правее",
+                "roundabout": "На кольце, сверните на",
+                "onto": "на",
+                "destination-reached": "Вы прибыли в пункт назначения",
+                
+                // Directions
+                "north": "север",
+                "south": "юг", 
+                "east": "восток",
+                "west": "запад",
+                "northeast": "северо-восток",
+                "northwest": "северо-запад",
+                "southeast": "юго-восток",
+                "southwest": "юго-запад",
+                
+                // Other UI elements
+                "home": "Главная",
+                "rewards": "Награды",
+                "knowledge": "Эко-знания",
+                "community": "Сообщество",
+                "signin": "Войти"
+            },
+            kz: {
+                // Navigation
+                "navigation": "Навигация",
+                "my-location": "Менің орнам",
+                "start-navigation": "Навигацияны бастау",
+                "clear-route": "Маршрутты тазарту",
+                "route-information": "Маршрут туралы ақпарат",
+                "distance": "Қашықтық: -",
+                "time": "Уақыт: -",
+                "navigate-here": "Маршрут құру",
+                "your-location": "Сіздің орналасқан жеріңіз",
+                "destination": "Баратын жер",
+                
+                // Map Filters
+                "map-filters": "Карта сүзгілері",
+                "trash-spots": "Қоқыс нүктелері",
+                "cleaned-areas": "Тазартылған аймақтар",
+                "planting-zones": "Отырғызу аймақтары",
+                "polluted-zones": "Ласанған аймақтар",
+                "upcoming-events": "Алдағы оқиғалар",
+                "report-an-issue": "Мәселе туралы хабарлау",
+                "report-issue": "Мәселе туралы хабарлау",
+                
+                // Messages
+                "location-permission": "EcoMap навигацияны ұсыну үшін сіздің орналасқан жеріңізді пайдаланғысы келеді. Рұқсат етесіз бе?",
+                "need-destination": "Алдымен картаны немесе маркерді басу арқылы баратын жерді орнатыңыз.",
+                "location-error": "Сіздің орналасқан жеріңізді анықтау мүмкін болмады. Геолокация параметрлерін тексеріңіз.",
+                "geolocation-error": "Сіздің браузеріңіз геолокацияны қолдамайды.",
+                
+                // Route instructions
+                "head": "Жүріңіз",
+                "continue": "Жүруді жалғастырыңыз",
+                "turn-left": "Солға бұрылыңыз",
+                "turn-right": "Оңға бұрылыңыз",
+                "keep-left": "Солда қалыңыз",
+                "keep-right": "Оңда қалыңыз",
+                "roundabout": "Айналыс буынында, шығыңыз",
+                "onto": "-ге",
+                "destination-reached": "Сіз баратын жерге жеттіңіз",
+                
+                // Directions
+                "north": "солтүстік",
+                "south": "оңтүстік", 
+                "east": "шығыс",
+                "west": "батыс",
+                "northeast": "солтүстік-шығыс",
+                "northwest": "солтүстік-батыс",
+                "southeast": "оңтүстік-шығыс",
+                "southwest": "оңтүстік-батыс",
+                
+                // Other UI elements
+                "home": "Басты",
+                "rewards": "Марапаттар",
+                "knowledge": "Эко-білім",
+                "community": "Қауымдастық",
+                "signin": "Кіру"
+            }
+        };
+
+        // Current language
+        let currentLang = 'en';
+
+        // Function to translate text
+        function translateText() {
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (translations[currentLang][key]) {
+                    element.textContent = translations[currentLang][key];
+                }
+            });
+            
+            document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-translate-placeholder');
+                if (translations[currentLang][key]) {
+                    element.setAttribute('placeholder', translations[currentLang][key]);
+                }
+            });
+            
+            // Update route info if displayed
+            updateRouteInfo();
+        }
+
+        // Function to translate route instructions
+        function translateInstruction(instruction) {
+            let translated = instruction;
+            
+            // Translate directions
+            Object.keys(translations[currentLang]).forEach(key => {
+                if (['north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest'].includes(key)) {
+                    const regex = new RegExp('\\b' + key + '\\b', 'gi');
+                    translated = translated.replace(regex, translations[currentLang][key]);
+                }
+            });
+            
+            // Translate common phrases
+            if (currentLang !== 'en') {
+                translated = translated.replace(/\bHead\b/gi, translations[currentLang]['head']);
+                translated = translated.replace(/\bContinue\b/gi, translations[currentLang]['continue']);
+                translated = translated.replace(/\bTurn left\b/gi, translations[currentLang]['turn-left']);
+                translated = translated.replace(/\bTurn right\b/gi, translations[currentLang]['turn-right']);
+                translated = translated.replace(/\bKeep left\b/gi, translations[currentLang]['keep-left']);
+                translated = translated.replace(/\bKeep right\b/gi, translations[currentLang]['keep-right']);
+                translated = translated.replace(/\bonto\b/gi, translations[currentLang]['onto']);
+                translated = translated.replace(/\bAt roundabout, take exit\b/gi, translations[currentLang]['roundabout']);
+                translated = translated.replace(/\bYou have arrived at your destination\b/gi, translations[currentLang]['destination-reached']);
+            }
+            
+            return translated;
+        }
+
+        // Initialize fullscreen map with markers and navigation
         document.addEventListener('DOMContentLoaded', function() {
             const map = L.map('fullscreen-map').setView([51.1605, 71.4704], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
+
+            // Variables for navigation
+            let userLocation = null;
+            let userLocationMarker = null;
+            let destinationMarker = null;
+            let routingControl = null;
+            let isNavigating = false;
 
             // Create custom icons
             const trashIcon = L.icon({
@@ -201,6 +493,15 @@
                 shadowSize: [41, 41]
             });
 
+            const userIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-gold.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
             // Add markers data
             const trashSpots = [
                 { lat: 51.1475, lng: 71.4225, title: "Park Trash Accumulation", description: "Plastic bottles and food wrappers", severity: "Medium" },
@@ -223,6 +524,27 @@
                 { lat: 51.1500, lng: 71.4350, title: "Park Cleanup Event", description: "June 15, 9AM-12PM", participants: 23 },
                 { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
             ];
+
+            // Function to get translated text
+            function t(key) {
+                return translations[currentLang][key] || key;
+            }
+
+            // Function to update route information display
+            function updateRouteInfo() {
+                const distanceElement = document.getElementById('route-distance');
+                const timeElement = document.getElementById('route-time');
+                
+                if (distanceElement.textContent !== 'Distance: -') {
+                    const distance = distanceElement.textContent.replace('Distance: ', '');
+                    distanceElement.textContent = t('distance').replace(': -', ': ' + distance);
+                }
+                
+                if (timeElement.textContent !== 'Time: -') {
+                    const time = timeElement.textContent.replace('Time: ', '');
+                    timeElement.textContent = t('time').replace(': -', ': ' + time);
+                }
+            }
 
             // Add markers to map with before/after sliders for trash spots
             trashSpots.forEach(spot => {
@@ -247,6 +569,9 @@
                         <div class="mt-2 text-xs text-gray-500">
                             Drag slider to see before/after comparison
                         </div>
+                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition navigate-to-btn" data-lat="${spot.lat}" data-lng="${spot.lng}">
+                            ${t('navigate-here')}
+                        </button>
                     `);
                     
                 // Add event listener for slider when popup opens
@@ -260,25 +585,96 @@
                             }
                         });
                     }
+                    
+                    // Add event listener for navigate button
+                    const navigateBtn = document.querySelector('.leaflet-popup-content .navigate-to-btn');
+                    if (navigateBtn) {
+                        navigateBtn.addEventListener('click', function() {
+                            const lat = parseFloat(this.getAttribute('data-lat'));
+                            const lng = parseFloat(this.getAttribute('data-lng'));
+                            setDestination(lat, lng);
+                            map.closePopup();
+                        });
+                    }
                 });
             });
 
             cleanedAreas.forEach(area => {
-                L.marker([area.lat, area.lng], { icon: cleanedIcon })
+                const marker = L.marker([area.lat, area.lng], { icon: cleanedIcon })
                     .addTo(map)
-                    .bindPopup(`<b>${area.title}</b><br>${area.description}<br>Volunteers: ${area.volunteers}<br><span class="text-green-600">Area Cleaned</span>`);
+                    .bindPopup(`
+                        <b>${area.title}</b><br>
+                        ${area.description}<br>
+                        Volunteers: ${area.volunteers}<br>
+                        <span class="text-green-600">Area Cleaned</span>
+                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition navigate-to-btn" data-lat="${area.lat}" data-lng="${area.lng}">
+                            ${t('navigate-here')}
+                        </button>
+                    `);
+                    
+                marker.on('popupopen', function() {
+                    const navigateBtn = document.querySelector('.leaflet-popup-content .navigate-to-btn');
+                    if (navigateBtn) {
+                        navigateBtn.addEventListener('click', function() {
+                            const lat = parseFloat(this.getAttribute('data-lat'));
+                            const lng = parseFloat(this.getAttribute('data-lng'));
+                            setDestination(lat, lng);
+                            map.closePopup();
+                        });
+                    }
+                });
             });
 
             plantingZones.forEach(zone => {
-                L.marker([zone.lat, zone.lng], { icon: plantingIcon })
+                const marker = L.marker([zone.lat, zone.lng], { icon: plantingIcon })
                     .addTo(map)
-                    .bindPopup(`<b>${zone.title}</b><br>${zone.description}<br>Date: ${zone.date}<br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>`);
+                    .bindPopup(`
+                        <b>${zone.title}</b><br>
+                        ${zone.description}<br>
+                        Date: ${zone.date}<br>
+                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>
+                        <button class="mt-2 bg-blue-600 text-white px-2 py-1 rounded text-sm hover:bg-blue-700 transition navigate-to-btn" data-lat="${zone.lat}" data-lng="${zone.lng}">
+                            ${t('navigate-here')}
+                        </button>
+                    `);
+                    
+                marker.on('popupopen', function() {
+                    const navigateBtn = document.querySelector('.leaflet-popup-content .navigate-to-btn');
+                    if (navigateBtn) {
+                        navigateBtn.addEventListener('click', function() {
+                            const lat = parseFloat(this.getAttribute('data-lat'));
+                            const lng = parseFloat(this.getAttribute('data-lng'));
+                            setDestination(lat, lng);
+                            map.closePopup();
+                        });
+                    }
+                });
             });
 
             events.forEach(event => {
-                L.marker([event.lat, event.lng], { icon: eventIcon })
+                const marker = L.marker([event.lat, event.lng], { icon: eventIcon })
                     .addTo(map)
-                    .bindPopup(`<b>${event.title}</b><br>${event.description}<br>Participants: ${event.participants}<br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>`);
+                    .bindPopup(`
+                        <b>${event.title}</b><br>
+                        ${event.description}<br>
+                        Participants: ${event.participants}<br>
+                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>
+                        <button class="mt-2 bg-blue-600 text-white px-2 py-1 rounded text-sm hover:bg-blue-700 transition navigate-to-btn" data-lat="${event.lat}" data-lng="${event.lng}">
+                            ${t('navigate-here')}
+                        </button>
+                    `);
+                    
+                marker.on('popupopen', function() {
+                    const navigateBtn = document.querySelector('.leaflet-popup-content .navigate-to-btn');
+                    if (navigateBtn) {
+                        navigateBtn.addEventListener('click', function() {
+                            const lat = parseFloat(this.getAttribute('data-lat'));
+                            const lng = parseFloat(this.getAttribute('data-lng'));
+                            setDestination(lat, lng);
+                            map.closePopup();
+                        });
+                    }
+                });
             });
 
             // Add circles
@@ -295,6 +691,193 @@
                 fillOpacity: 0.5,
                 radius: 300
             }).addTo(map).bindPopup("<b>Improved Zone</b><br>Former polluted area now restored by volunteers");
+
+            // Function to get user's location
+            function locateUser() {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            userLocation = [position.coords.latitude, position.coords.longitude];
+                            
+                            // Remove existing user marker if any
+                            if (userLocationMarker) {
+                                map.removeLayer(userLocationMarker);
+                            }
+                            
+                            // Add user location marker
+                            userLocationMarker = L.marker(userLocation, { icon: userIcon })
+                                .addTo(map)
+                                .bindPopup(t('your-location'))
+                                .openPopup();
+                                
+                            // Center map on user location
+                            map.setView(userLocation, 15);
+                            
+                            // If navigating, recalculate route
+                            if (isNavigating && destinationMarker) {
+                                calculateRoute(userLocation, destinationMarker.getLatLng());
+                            }
+                        },
+                        function(error) {
+                            alert(t('location-error'));
+                            console.error("Geolocation error:", error);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 60000
+                        }
+                    );
+                } else {
+                    alert(t('geolocation-error'));
+                }
+            }
+
+            // Function to set destination
+            function setDestination(lat, lng) {
+                // Remove existing destination marker if any
+                if (destinationMarker) {
+                    map.removeLayer(destinationMarker);
+                }
+                
+                // Add destination marker
+                destinationMarker = L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup(t('destination'))
+                    .openPopup();
+                
+                // If user location is known, calculate route
+                if (userLocation) {
+                    calculateRoute(userLocation, [lat, lng]);
+                } else {
+                    // Ask for user location
+                    if (confirm(t('location-permission'))) {
+                        locateUser();
+                    }
+                }
+            }
+
+            // Function to calculate route
+            function calculateRoute(from, to) {
+                // Remove existing route if any
+                if (routingControl) {
+                    map.removeControl(routingControl);
+                }
+                
+                // Create new route
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(from[0], from[1]),
+                        L.latLng(to[0], to[1])
+                    ],
+                    routeWhileDragging: false,
+                    showAlternatives: false,
+                    lineOptions: {
+                        styles: [{color: '#16a34a', opacity: 0.7, weight: 5}]
+                    },
+                    createMarker: function() { return null; }, // Don't create markers
+                    collapsible: true,
+                    fitSelectedRoutes: true,
+                    show: false
+                }).addTo(map);
+                
+                // Show route info panel
+                document.getElementById('route-info-panel').classList.remove('hidden');
+                isNavigating = true;
+                
+                // Handle route found event
+                routingControl.on('routesfound', function(e) {
+                    const routes = e.routes;
+                    const summary = routes[0].summary;
+                    
+                    // Update route info
+                    document.getElementById('route-distance').textContent = 
+                        `${t('distance').replace(': -', '')}: ${(summary.totalDistance / 1000).toFixed(1)} km`;
+                    document.getElementById('route-time').textContent = 
+                        `${t('time').replace(': -', '')}: ${Math.round(summary.totalTime / 60)} min`;
+                    
+                    // Add instructions
+                    const instructionsContainer = document.getElementById('route-instructions');
+                    instructionsContainer.innerHTML = '';
+                    
+                    routes[0].instructions.forEach(function(instruction, index) {
+                        const instructionElement = document.createElement('div');
+                        instructionElement.className = 'mb-1';
+                        
+                        // Translate the instruction
+                        const translatedInstruction = translateInstruction(instruction.text);
+                        
+                        instructionElement.innerHTML = `${index + 1}. ${translatedInstruction}`;
+                        instructionsContainer.appendChild(instructionElement);
+                    });
+                });
+            }
+
+            // Function to clear route
+            function clearRoute() {
+                if (routingControl) {
+                    map.removeControl(routingControl);
+                    routingControl = null;
+                }
+                
+                if (destinationMarker) {
+                    map.removeLayer(destinationMarker);
+                    destinationMarker = null;
+                }
+                
+                // Hide route info panel
+                document.getElementById('route-info-panel').classList.add('hidden');
+                isNavigating = false;
+                
+                // Reset route info
+                document.getElementById('route-distance').textContent = t('distance');
+                document.getElementById('route-time').textContent = t('time');
+            }
+
+            // Event listeners for buttons
+            document.getElementById('locate-me-btn').addEventListener('click', locateUser);
+            document.getElementById('start-navigation-btn').addEventListener('click', function() {
+                if (!userLocation) {
+                    locateUser();
+                }
+                
+                if (!destinationMarker) {
+                    alert(t('need-destination'));
+                }
+            });
+            document.getElementById('clear-route-btn').addEventListener('click', clearRoute);
+
+            // Click on map to set destination
+            map.on('click', function(e) {
+                setDestination(e.latlng.lat, e.latlng.lng);
+            });
+
+            // Language switcher functionality
+            document.getElementById('language-toggle').addEventListener('click', function() {
+                const dropdown = document.getElementById('language-dropdown');
+                dropdown.classList.toggle('hidden');
+            });
+
+            document.querySelectorAll('#language-dropdown button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const lang = this.getAttribute('data-lang');
+                    currentLang = lang;
+                    document.getElementById('current-language').textContent = 
+                        lang === 'en' ? 'EN' : lang === 'ru' ? 'RU' : 'KZ';
+                    document.getElementById('language-dropdown').classList.add('hidden');
+                    translateText();
+                });
+            });
+
+            // Request location on load
+            setTimeout(function() {
+                if (confirm(t('location-permission'))) {
+                    locateUser();
+                }
+            }, 1000);
+
+            // Initial translation
+            translateText();
         });
     </script>
 </body>
