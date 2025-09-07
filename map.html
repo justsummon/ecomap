@@ -105,6 +105,27 @@
             max-height: 200px;
             overflow-y: auto;
         }
+
+        .transport-mode-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .transport-mode-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.3s;
+        }
+        .transport-mode-btn.active {
+            background-color: #16a34a;
+            color: white;
+            border-color: #16a34a;
+        }
+
     </style>
 </head>
 <body class="bg-green-50">
@@ -174,6 +195,17 @@
         <!-- Route Info Panel -->
         <div id="route-info-panel" class="route-info-panel hidden">
             <h4 class="font-semibold mb-2" data-translate="route-information">Route Information</h4>
+<<<<<<< HEAD
+            <div class="transport-mode-selector">
+                <button class="transport-mode-btn active" data-mode="car">
+                    <i class="fas fa-car mr-1"></i> <span data-translate="car">Car</span>
+                </button>
+                <button class="transport-mode-btn" data-mode="walk">
+                    <i class="fas fa-walking mr-1"></i> <span data-translate="walk">Walk</span>
+                </button>
+            </div>
+=======
+>>>>>>> fa76a6b4bcaac86c1ca05ec6923a892f156becaa
             <div id="route-distance" data-translate="distance">Distance: -</div>
             <div id="route-time" data-translate="time">Time: -</div>
             <div id="route-instructions" class="mt-2 text-sm"></div>
@@ -230,6 +262,12 @@
                 "your-location": "Your location",
                 "destination": "Destination",
                 
+
+                // Transport modes
+                "car": "Car",
+                "walk": "Walk",
+                
+
                 // Map Filters
                 "map-filters": "Map Filters",
                 "trash-spots": "Trash Spots",
@@ -287,6 +325,12 @@
                 "your-location": "Ваше местоположение",
                 "destination": "Место назначения",
                 
+
+                // Transport modes
+                "car": "Машина",
+                "walk": "Пешком",
+                
+
                 // Map Filters
                 "map-filters": "Фильтры карты",
                 "trash-spots": "Мусорные точки",
@@ -344,6 +388,12 @@
                 "your-location": "Сіздің орналасқан жеріңіз",
                 "destination": "Баратын жер",
                 
+
+                // Transport modes
+                "car": "Көлік",
+                "walk": "Жәңгіма",
+                
+
                 // Map Filters
                 "map-filters": "Карта сүзгілері",
                 "trash-spots": "Қоқыс нүктелері",
@@ -441,6 +491,33 @@
             return translated;
         }
 
+
+        // Function to format time
+        function formatTime(minutes) {
+            if (minutes < 60) {
+                return `${Math.round(minutes)} мин`;
+            } else {
+                const hours = minutes / 60;
+                // Округляем до десятых, но если число целое, показываем без десятичных
+                return hours % 1 === 0 ? `${hours} ч` : `${hours.toFixed(1)} ч`;
+            }
+        }
+
+        // Function to calculate travel time
+        function calculateTravelTime(distance, mode = 'car') {
+            // Средние скорости (в км/ч)
+            const speeds = {
+                'car': 50,    // средняя скорость автомобиля в городе
+                'walk': 5      // средняя скорость пешехода
+            };
+            
+            const speed = speeds[mode] || 50; // по умолчанию автомобиль
+            const timeMinutes = (distance / speed) * 60;
+            
+            return timeMinutes;
+        }
+
+
         // Initialize fullscreen map with markers and navigation
         document.addEventListener('DOMContentLoaded', function() {
             const map = L.map('fullscreen-map').setView([51.1605, 71.4704], 13);
@@ -455,6 +532,9 @@
             let destinationMarker = null;
             let routingControl = null;
             let isNavigating = false;
+
+            let currentTravelMode = 'car';
+
 
             // Create custom icons
             const trashIcon = L.icon({
@@ -545,6 +625,17 @@
                     timeElement.textContent = t('time').replace(': -', ': ' + time);
                 }
             }
+
+
+            // Function to update route time display
+            function updateRouteTimeDisplay(distanceKm, mode = 'car') {
+                const timeMinutes = calculateTravelTime(distanceKm, mode);
+                const formattedTime = formatTime(timeMinutes);
+                
+                document.getElementById('route-time').textContent = 
+                    `${t('time').replace(': -', '')}: ${formattedTime}`;
+            }
+
 
             // Add markers to map with before/after sliders for trash spots
             trashSpots.forEach(spot => {
@@ -789,12 +880,23 @@
                 routingControl.on('routesfound', function(e) {
                     const routes = e.routes;
                     const summary = routes[0].summary;
+
+                    const distanceKm = summary.totalDistance / 1000;
+                    
+                    // Update route info
+                    document.getElementById('route-distance').textContent = 
+                        `${t('distance').replace(': -', '')}: ${distanceKm.toFixed(1)} km`;
+                    
+                    // Update time with current travel mode
+                    updateRouteTimeDisplay(distanceKm, currentTravelMode);
+
                     
                     // Update route info
                     document.getElementById('route-distance').textContent = 
                         `${t('distance').replace(': -', '')}: ${(summary.totalDistance / 1000).toFixed(1)} km`;
                     document.getElementById('route-time').textContent = 
                         `${t('time').replace(': -', '')}: ${Math.round(summary.totalTime / 60)} min`;
+
                     
                     // Add instructions
                     const instructionsContainer = document.getElementById('route-instructions');
@@ -846,6 +948,30 @@
                 }
             });
             document.getElementById('clear-route-btn').addEventListener('click', clearRoute);
+
+
+            // Transport mode selector
+            document.querySelectorAll('.transport-mode-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    document.querySelectorAll('.transport-mode-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Update current travel mode
+                    currentTravelMode = this.getAttribute('data-mode');
+                    
+                    // If we have an active route, update the time display
+                    if (routingControl && routingControl.getRoutes().length > 0) {
+                        const distance = routingControl.getRoutes()[0].summary.totalDistance / 1000;
+                        updateRouteTimeDisplay(distance, currentTravelMode);
+                    }
+                });
+            });
+
 
             // Click on map to set destination
             map.on('click', function(e) {
