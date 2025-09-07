@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoMap - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .btn-transition {
+            transition: all 0.3s ease;
+        }
+        .btn-transition:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-green-50 min-h-screen flex items-center justify-center p-4">
+    <!-- Login Container -->
+    <div id="login-container" class="w-full max-w-md">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden slide-up">
+            <!-- Header -->
+            <div class="bg-green-600 py-6 px-6 text-center">
+                <div class="flex items-center justify-center mb-4">
+                    <i class="fas fa-leaf text-4xl text-white mr-3"></i>
+                    <h1 class="text-3xl font-bold text-white">EcoMap</h1>
+                </div>
+                <p class="text-green-100">Sign in to access your eco-profile</p>
+            </div>
+            
+            <!-- Login Form -->
+            <div class="px-8 py-6">
+                <form id="login-form">
+                    <div class="mb-4">
+                        <label for="email" class="block text-gray-700 text-sm font-medium mb-2">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input type="email" id="email" class="pl-10 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="your@email.com" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="password" class="block text-gray-700 text-sm font-medium mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="password" class="pl-10 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="••••••••" required>
+                        </div>
+                        <div class="text-right mt-2">
+                            <a href="#" class="text-sm text-green-600 hover:underline">Forgot Password?</a>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <button type="submit" class="btn-transition w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">
+                            Sign In
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center text-sm text-gray-600 mb-4">Or sign in with</div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <button class="btn-transition py-2 px-4 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50">
+                        <i class="fab fa-google text-red-500 mr-2"></i>
+                        <span>Google</span>
+                    </button>
+                    <button class="btn-transition py-2 px-4 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50">
+                        <i class="fab fa-facebook text-blue-600 mr-2"></i>
+                        <span>Facebook</span>
+                    </button>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-gray-600 text-sm">Don't have an account? 
+                        <a href="#" class="text-green-600 font-semibold hover:underline">Sign up</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-6 text-gray-600 text-sm">
+            <p>By signing in, you agree to our <a href="#" class="text-green-600 hover:underline">Terms of Service</a> and <a href="#" class="text-green-600 hover:underline">Privacy Policy</a>.</p>
+        </div>
+    </div>
+    
+    <!-- Profile Container (Initially Hidden) -->
+    <div id="profile-container" class="hidden w-full">
+        <!-- Header -->
+        <header class="bg-green-600 text-white shadow-lg fixed w-full top-0 z-10">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <i class="fas fa-leaf text-2xl mr-3"></i>
+                        <h1 class="text-xl font-bold">EcoMap</h1>
+                    </div>
+                    <nav class="hidden md:flex space-x-4">
+                        <a href="#" class="px-3 py-2 rounded hover:bg-green-700 transition">Home</a>
+                        <a href="#" class="px-3 py-2 rounded hover:bg-green-700 transition">Rewards</a>
+                        <a href="#" class="px-3 py-2 rounded hover:bg-green-700 transition">Eco-Knowledge</a>
+                        <a href="#" class="px-3 py-2 rounded hover:bg-green-700 transition">Community</a>
+                    </nav>
+                    <div class="flex items-center">
+                        <div class="bg-green-800 px-4 py-2 rounded-full font-semibold mr-4">
+                            <i class="fas fa-coins mr-2"></i><span id="points-count">350</span> pts
+                        </div>
+                        <button id="logout-btn" class="bg-white text-green-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Profile Content -->
+        <section class="pt-24 pb-16 px-4">
+            <div class="container mx-auto">
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-6 fade-in">
+                        <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-6">
+                            <div class="text-center">
+                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80" alt="Profile Avatar" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-green-500">
+                                <button class="bg-green-600 text-white px-4 py-2 rounded-full text-sm hover:bg-green-700 transition">
+                                    <i class="fas fa-camera mr-2"></i>Change Photo
+                                </button>
+                            </div>
+                            <div class="flex-1">
+                                <h2 class="text-2xl font-bold text-green-800 mb-4">User Profile</h2>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">Name</label>
+                                        <p class="text-lg font-semibold">John Doe</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
+                                        <p class="text-lg font-semibold">john.doe@example.com</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">Member Since</label>
+                                        <p class="text-lg font-semibold">January 2024</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">Level</label>
+                                        <p class="text-lg font-semibold">Eco Warrior</p>
+                                    </div>
+                                </div>
+                                <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                                    <i class="fas fa-edit mr-2"></i>Edit Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 fade-in">
+                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                            <div class="text-3xl font-bold text-green-600 mb-2">12</div>
+                            <div class="text-gray-600">Cleanups Joined</div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                            <div class="text-3xl font-bold text-green-600 mb-2">8</div>
+                            <div class="text-gray-600">Issues Reported</div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                            <div class="text-3xl font-bold text-green-600 mb-2">350</div>
+                            <div class="text-gray-600">Total Points</div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-6 fade-in">
+                        <h3 class="text-xl font-bold text-green-800 mb-4">Recent Activity</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                                <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-trash text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Reported trash accumulation</p>
+                                    <p class="text-sm text-gray-600">2 days ago - Central Park</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-hands-helping text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Joined community cleanup</p>
+                                    <p class="text-sm text-gray-600">5 days ago - Riverside area</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                                <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-medal text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Earned Eco Warrior badge</p>
+                                    <p class="text-sm text-gray-600">1 week ago - Level Up!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Badges Section -->
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-6 fade-in">
+                        <h3 class="text-xl font-bold text-green-800 mb-4">Eco Badges</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <i class="fas fa-seedling text-white text-2xl"></i>
+                                </div>
+                                <p class="text-sm font-semibold">Starter</p>
+                                <p class="text-xs text-gray-600">First cleanup</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <i class="fas fa-recycle text-white text-2xl"></i>
+                                </div>
+                                <p class="text-sm font-semibold">Recycler</p>
+                                <p class="text-xs text-gray-600">10+ items</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <i class="fas fa-users text-white text-2xl"></i>
+                                </div>
+                                <p class="text-sm font-semibold">Team Player</p>
+                                <p class="text-xs text-gray-600">5+ events</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <i class="fas fa-trophy text-white text-2xl"></i>
+                                </div>
+                                <p class="text-sm font-semibold">Eco Warrior</p>
+                                <p class="text-xs text-gray-600">Level 3</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('login-form');
+            const loginContainer = document.getElementById('login-container');
+            const profileContainer = document.getElementById('profile-container');
+            const logoutBtn = document.getElementById('logout-btn');
+            
+            // Check if user is already logged in
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                showProfile();
+            }
+            
+            // Handle login form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                // Simple validation
+                if (email && password) {
+                    // Simulate login process
+                    setTimeout(() => {
+                        // Store login state
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('userEmail', email);
+                        
+                        // Show profile page
+                        showProfile();
+                    }, 500);
+                }
+            });
+            
+            // Handle logout
+            logoutBtn.addEventListener('click', function() {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userEmail');
+                
+                // Show login page
+                loginContainer.classList.remove('hidden');
+                profileContainer.classList.add('hidden');
+                
+                // Reset form
+                loginForm.reset();
+            });
+            
+            // Function to show profile page
+            function showProfile() {
+                loginContainer.classList.add('hidden');
+                profileContainer.classList.remove('hidden');
+                
+                // Update profile email if available
+                const userEmail = localStorage.getItem('userEmail');
+                if (userEmail) {
+                    const emailElement = document.querySelector('.text-lg.font-semibold');
+                    if (emailElement) {
+                        emailElement.textContent = userEmail;
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
