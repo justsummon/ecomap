@@ -69,3 +69,11 @@
   border: 2px solid white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+
+/* Стили для модального окна */
+.modal {
+  transition: opacity 0.3s ease;
+}
+.modal-content {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
