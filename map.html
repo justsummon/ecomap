@@ -195,7 +195,6 @@
         <!-- Route Info Panel -->
         <div id="route-info-panel" class="route-info-panel hidden">
             <h4 class="font-semibold mb-2" data-translate="route-information">Route Information</h4>
-<<<<<<< HEAD
             <div class="transport-mode-selector">
                 <button class="transport-mode-btn active" data-mode="car">
                     <i class="fas fa-car mr-1"></i> <span data-translate="car">Car</span>
@@ -204,8 +203,7 @@
                     <i class="fas fa-walking mr-1"></i> <span data-translate="walk">Walk</span>
                 </button>
             </div>
-=======
->>>>>>> fa76a6b4bcaac86c1ca05ec6923a892f156becaa
+
             <div id="route-distance" data-translate="distance">Distance: -</div>
             <div id="route-time" data-translate="time">Time: -</div>
             <div id="route-instructions" class="mt-2 text-sm"></div>
@@ -635,8 +633,7 @@
                 document.getElementById('route-time').textContent = 
                     `${t('time').replace(': -', '')}: ${formattedTime}`;
             }
-
-
+            
             // Add markers to map with before/after sliders for trash spots
             trashSpots.forEach(spot => {
                 const marker = L.marker([spot.lat, spot.lng], { icon: trashIcon })
