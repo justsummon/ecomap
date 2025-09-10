@@ -468,32 +468,47 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         cleanedAreas.forEach(area => {
-            L.marker([area.lat, area.lng], { icon: cleanedIcon })
-            .addTo(map)
-            .bindPopup(`
-    <img src="logos/bin-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
-    <div class="ml-0">
-        <b>${area.title}</b><br>
-        ${area.description}<br>
-        Volunteers: ${area.volunteers}<br>
-        <span class="text-green-600">Area Cleaned</span><br>
-        
-        <!-- Before/After slider -->
-        <div class="before-after-container">
-            <div class="before-image">
-                <img src="images/${area.title.toLowerCase().replace(/\s+/g, '-')}-before.jpg" alt="Before cleanup" />
-            </div>
-            <div class="after-image">
-                <img src="images/${area.title.toLowerCase().replace(/\s+/g, '-')}-after.jpg" alt="After cleanup" />
-            </div>
-            <input type="range" min="0" max="100" value="50" class="slider" />
-        </div>
-        <div class="mt-2 text-xs text-gray-500">
-            Drag slider to see before/after comparison
-        </div>
-    </div>
-`);
+    // Определяем какие фото использовать для каждого места
+    let beforePhoto, afterPhoto;
+    
+    if (area.title === "Central Park Cleanup") {
+        beforePhoto = "images/a-before.jpg";
+        afterPhoto = "images/b-after.jpg";
+    } else if (area.title === "Esil River Cleanup") {
+        beforePhoto = "images/c-before.jpg";
+        afterPhoto = "images/d-after.jpg";
+    } else {
+        // Запасной вариант на случай ошибки
+        beforePhoto = "https://via.placeholder.com/250x150/ff0000/ffffff?text=Before";
+        afterPhoto = "https://via.placeholder.com/250x150/00ff00/ffffff?text=After";
+    }
 
+    L.marker([area.lat, area.lng], { icon: cleanedIcon })
+    .addTo(map)
+    .bindPopup(`
+        <img src="logos/cleanup-logo.png" class="popup-logo" style="width: 20px; height: 20px;">
+        <div class="ml-0">
+            <b>${area.title}</b><br>
+            ${area.description}<br>
+            Volunteers: ${area.volunteers}<br>
+            <span class="text-green-600">Area Cleaned</span><br>
+            
+            <!-- Before/After slider -->
+            <div class="before-after-container">
+                <div class="before-image">
+                    <img src="${beforePhoto}" alt="Before cleanup" onerror="this.src='https://via.placeholder.com/250x150/ff0000/ffffff?text=Error+Loading+Before'"/>
+                </div>
+                <div class="after-image">
+                    <img src="${afterPhoto}" alt="After cleanup" onerror="this.src='https://via.placeholder.com/250x150/00ff00/ffffff?text=Error+Loading+After'"/>
+                </div>
+                <input type="range" min="0" max="100" value="50" class="slider" />
+            </div>
+            <div class="mt-2 text-xs text-gray-500">
+                Drag slider to see before/after comparison
+            </div>
+        </div>
+    `);
+});
         plantingZones.forEach(zone => {
             L.marker([zone.lat, zone.lng], { icon: plantingIcon })
                 .addTo(map)
