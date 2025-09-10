@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', function () {
             L.marker([area.lat, area.lng], { icon: cleanedIcon })
             .addTo(map)
             .bindPopup(`
-    <img src="logos/bin-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
+    <img src="logos/cleanup-logo.png" class="popup-logo" style="width: 20px; height: 20px;">
     <div class="ml-0">
         <b>${area.title}</b><br>
         ${area.description}<br>
@@ -481,10 +481,10 @@ document.addEventListener('DOMContentLoaded', function () {
         <!-- Before/After slider -->
         <div class="before-after-container">
             <div class="before-image">
-                <img src="images/${area.title.toLowerCase().replace(/\s+/g, '-')}-before.jpg" alt="Before cleanup" />
+                <img src="images/${area.title === 'Central Park Cleanup' ? 'a-before.jpg' : 'c-before.jpg'}" alt="Before cleanup" />
             </div>
             <div class="after-image">
-                <img src="images/${area.title.toLowerCase().replace(/\s+/g, '-')}-after.jpg" alt="After cleanup" />
+                <img src="images/${area.title === 'Central Park Cleanup' ? 'b-after.jpg' : 'd-after.jpg'}" alt="After cleanup" />
             </div>
             <input type="range" min="0" max="100" value="50" class="slider" />
         </div>
@@ -493,7 +493,6 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
     </div>
 `);
-
         plantingZones.forEach(zone => {
             L.marker([zone.lat, zone.lng], { icon: plantingIcon })
                 .addTo(map)
