@@ -453,53 +453,74 @@ document.addEventListener('DOMContentLoaded', function () {
             { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
         ];
 
-        // Add markers to map - ОБНОВЛЕННЫЙ КОД ДЛЯ СЛАЙДЕРОВ
+        // Add markers to map - UPDATED CODE WITH LOGOS
         trashSpots.forEach(spot => {
-L.marker([spot.lat, spot.lng], { icon: trashIcon })
-.addTo(map)
-.bindPopup(`
-<b>${spot.title}</b><br>
-${spot.description}<br>
-<span class="text-red-600">Severity: ${spot.severity}</span>
-`);
+            L.marker([spot.lat, spot.lng], { icon: trashIcon })
+            .addTo(map)
+            .bindPopup(`
+                <img src="logos/nur-sultan-logo.png" class="popup-logo">
+                <div class="ml-0">
+                    <b>${spot.title}</b><br>
+                    ${spot.description}<br>
+                    <span class="text-red-600">Severity: ${spot.severity}</span>
+                </div>
+            `);
         });
 
         cleanedAreas.forEach(area => {
-L.marker([area.lat, area.lng], { icon: cleanedIcon })
-.addTo(map)
-.bindPopup(`
-<b>${area.title}</b><br>
-${area.description}<br>
-Volunteers: ${area.volunteers}<br>
-<span class="text-green-600">Area Cleaned</span><br>
-
-
-<!-- Before/After slider -->
-<div class="before-after-container">
-<div class="before-image">
-<img src="https://via.placeholder.com/250x150/ff0000/ffffff?text=Before+Cleanup" alt="Before cleanup" />
-</div>
-<div class="after-image">
-<img src="https://via.placeholder.com/250x150/00ff00/ffffff?text=After+Cleanup" alt="After cleanup" />
-</div>
-<input type="range" min="0" max="100" value="50" class="slider" />
-</div>
-<div class="mt-2 text-xs text-gray-500">
-Drag slider to see before/after comparison
-</div>
-`);
+            L.marker([area.lat, area.lng], { icon: cleanedIcon })
+            .addTo(map)
+            .bindPopup(`
+                <img src="logos/cleanup-logo.png" class="popup-logo">
+                <div class="ml-0">
+                    <b>${area.title}</b><br>
+                    ${area.description}<br>
+                    Volunteers: ${area.volunteers}<br>
+                    <span class="text-green-600">Area Cleaned</span><br>
+                    
+                    <!-- Before/After slider -->
+                    <div class="before-after-container">
+                        <div class="before-image">
+                            <img src="https://via.placeholder.com/250x150/ff0000/ffffff?text=Before+Cleanup" alt="Before cleanup" />
+                        </div>
+                        <div class="after-image">
+                            <img src="https://via.placeholder.com/250x150/00ff00/ffffff?text=After+Cleanup" alt="After cleanup" />
+                        </div>
+                        <input type="range" min="0" max="100" value="50" class="slider" />
+                    </div>
+                    <div class="mt-2 text-xs text-gray-500">
+                        Drag slider to see before/after comparison
+                    </div>
+                </div>
+            `);
         });
 
         plantingZones.forEach(zone => {
             L.marker([zone.lat, zone.lng], { icon: plantingIcon })
                 .addTo(map)
-                .bindPopup(`<b>${zone.title}</b><br>${zone.description}<br>Date: ${zone.date}<br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>`);
+                .bindPopup(`
+                    <img src="logos/event-logo.png" class="popup-logo">
+                    <div class="ml-0">
+                        <b>${zone.title}</b><br>
+                        ${zone.description}<br>
+                        Date: ${zone.date}<br>
+                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>
+                    </div>
+                `);
         });
 
         events.forEach(event => {
             L.marker([event.lat, event.lng], { icon: eventIcon })
                 .addTo(map)
-                .bindPopup(`<b>${event.title}</b><br>${event.description}<br>Participants: ${event.participants}<br><button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>`);
+                .bindPopup(`
+                    <img src="logos/event-logo.png" class="popup-logo">
+                    <div class="ml-0">
+                        <b>${event.title}</b><br>
+                        ${event.description}<br>
+                        Participants: ${event.participants}<br>
+                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>
+                    </div>
+                `);
         });
 
         // Add circles
