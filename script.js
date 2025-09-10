@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', function () {
             L.marker([spot.lat, spot.lng], { icon: trashIcon })
             .addTo(map)
             .bindPopup(`
-                <img src="logos/trash-logo.png" class="popup-logo" style="width: 20px; height: 20px;">
+                <img src="logos/trash-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
                 <div class="ml-0">
                     <b>${spot.title}</b><br>
                     ${spot.description}<br>
@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', function () {
             L.marker([area.lat, area.lng], { icon: cleanedIcon })
             .addTo(map)
             .bindPopup(`
-    <img src="logos/cleanup-logo.png" class="popup-logo" style="width: 20px; height: 20px;">
+    <img src="logos/bin-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
     <div class="ml-0">
         <b>${area.title}</b><br>
         ${area.description}<br>
