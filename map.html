@@ -12,120 +12,57 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     <style>
-        .before-after-container {
-            position: relative;
-            width: 250px;
-            height: 150px;
-            overflow: hidden;
-            border-radius: 8px;
-            margin: 10px 0;
-            border: 2px solid #e5e7eb;
-        }
-        .before-after-container img {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-        }
-        .after-image {
-            clip-path: inset(0 0 0 50%);
-        }
-        .slider {
-            position: absolute;
-            bottom: 10px; left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            height: 15px;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 10px;
-            border: 1px solid #ccc;
-            -webkit-appearance: none;
-        }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #16a34a;
-            cursor: pointer;
-            border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #16a34a;
-            cursor: pointer;
-            border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .map-controls {
-            position: fixed;
-            top: 160px; /* Подвинули ниже для казахского языка */
-            right: 20px;
-            z-index: 1000;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            width: 280px;
-        }
-        .route-info-panel {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 1000;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            max-width: 320px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .navigation-controls {
-            position: fixed;
-            top: 120px;
-            left: 20px;
-            z-index: 1000;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .leaflet-routing-container {
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .transport-mode-selector {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        .transport-mode-btn {
-            padding: 6px 12px;
-            border: 1px solid #ddd;
-            border-radius: 15px;
-            font-size: 12px;
-            cursor: pointer;
-            background: white;
-            transition: all 0.3s;
-        }
-        .transport-mode-btn.active {
-            background-color: #16a34a;
-            color: white;
-            border-color: #16a34a;
-        }
-
+        <style>
+    .before-after-container {
+        position: relative;
+        width: 250px;
+        height: 150px;
+        overflow: hidden;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+    .before-after-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .after-image {
+        clip-path: inset(0 0 0 50%);
+    }
+    .slider {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        height: 20px;
+        z-index: 1000;
+        margin: 0;
+        -webkit-appearance: none;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid #16a34a;
+        cursor: pointer;
+    }
+    .slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid #16a34a;
+        cursor: pointer;
+    }
     </style>
 </head>
 <body class="bg-green-50">
