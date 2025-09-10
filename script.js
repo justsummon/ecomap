@@ -1,3 +1,17 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    
+    // Если не на странице профиля и не на главной, проверяем авторизацию
+    if (!window.location.pathname.includes('profile.html') && 
+        !window.location.pathname.includes('index.html') &&
+        !window.location.pathname.endsWith('/') &&
+        window.location.pathname !== '') {
+        if (!isLoggedIn) {
+            window.location.href = 'profile.html';
+        }
+    }
+});
+
 document.addEventListener('DOMContentLoaded', function () {
     // ===== LANGUAGE FUNCTIONALITY =====
     const languageToggle = document.getElementById('language-toggle');
