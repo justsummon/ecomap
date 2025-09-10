@@ -513,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function () {
             L.marker([zone.lat, zone.lng], { icon: plantingIcon })
                 .addTo(map)
                 .bindPopup(`
-                    <img src="logos/event-logo.png" class="popup-logo">
+                    <img src="logos/event-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
                     <div class="ml-0">
                         <b>${zone.title}</b><br>
                         ${zone.description}<br>
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function () {
             L.marker([event.lat, event.lng], { icon: eventIcon })
                 .addTo(map)
                 .bindPopup(`
-                    <img src="logos/event-logo.png" class="popup-logo">
+                    <img src="logos/event-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
                     <div class="ml-0">
                         <b>${event.title}</b><br>
                         ${event.description}<br>
