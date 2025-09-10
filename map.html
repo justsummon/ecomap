@@ -12,57 +12,107 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     <style>
-        <style>
-    .before-after-container {
-        position: relative;
-        width: 250px;
-        height: 150px;
-        overflow: hidden;
-        border-radius: 8px;
-        margin-top: 10px;
-    }
-    .before-after-container img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .after-image {
-        clip-path: inset(0 0 0 50%);
-    }
-    .slider {
-        position: absolute;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 90%;
-        height: 20px;
-        z-index: 1000;
-        margin: 0;
-        -webkit-appearance: none;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 10px;
-        cursor: pointer;
-    }
-    .slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #fff;
-        border: 2px solid #16a34a;
-        cursor: pointer;
-    }
-    .slider::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #fff;
-        border: 2px solid #16a34a;
-        cursor: pointer;
-    }
+        .before-after-container {
+            position: relative;
+            width: 250px;
+            height: 150px;
+            overflow: hidden;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .before-after-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .after-image {
+            clip-path: inset(0 0 0 50%);
+        }
+        .slider {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 20px;
+            z-index: 1000;
+            margin: 0;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #16a34a;
+            cursor: pointer;
+        }
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #16a34a;
+            cursor: pointer;
+        }
+        
+        /* Стили для панели навигации */
+        .navigation-controls {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            width: 250px;
+        }
+        
+        .route-info-panel {
+            position: absolute;
+            top: 250px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            width: 250px;
+        }
+        
+        .map-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            width: 250px;
+        }
+        
+        .transport-mode-btn {
+            padding: 8px 12px;
+            margin: 5px;
+            border-radius: 5px;
+            background: #f1f5f9;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .transport-mode-btn.active {
+            background: #16a34a;
+            color: white;
+        }
     </style>
 </head>
 <body class="bg-green-50">
@@ -115,15 +165,15 @@
         <!-- Navigation Controls -->
         <div class="navigation-controls">
             <h3 class="text-lg font-semibold mb-2 text-green-800" data-translate="navigation">Navigation</h3>
-            <button id="locate-me-btn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition flex items-center">
+            <button id="locate-me-btn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition flex items-center w-full mb-2">
                 <i class="fas fa-location-arrow mr-2"></i> 
                 <span data-translate="my-location">My Location</span>
             </button>
-            <button id="start-navigation-btn" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition flex items-center">
+            <button id="start-navigation-btn" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition flex items-center w-full mb-2">
                 <i class="fas fa-route mr-2"></i> 
                 <span data-translate="start-navigation">Start Navigation</span>
             </button>
-            <button id="clear-route-btn" class="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition flex items-center">
+            <button id="clear-route-btn" class="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition flex items-center w-full">
                 <i class="fas fa-times mr-2"></i> 
                 <span data-translate="clear-route">Clear Route</span>
             </button>
@@ -132,7 +182,7 @@
         <!-- Route Info Panel -->
         <div id="route-info-panel" class="route-info-panel hidden">
             <h4 class="font-semibold mb-2" data-translate="route-information">Route Information</h4>
-            <div class="transport-mode-selector">
+            <div class="transport-mode-selector mb-3">
                 <button class="transport-mode-btn active" data-mode="car">
                     <i class="fas fa-car mr-1"></i> <span data-translate="car">Car</span>
                 </button>
@@ -143,10 +193,10 @@
 
             <div id="route-distance" data-translate="distance">Distance: -</div>
             <div id="route-time" data-translate="time">Time: -</div>
-            <div id="route-instructions" class="mt-2 text-sm"></div>
+            <!-- Убрал блок с инструкциями маршрута -->
         </div>
         
-        <!-- Map Controls Overlay - FIXED POSITION -->
+        <!-- Map Controls Overlay -->
         <div class="map-controls">
             <h3 class="text-lg font-semibold mb-3 text-green-800" data-translate="map-filters">Map Filters</h3>
             <div class="space-y-3">
@@ -267,7 +317,7 @@
                 
 
                 // Map Filters
-                "map-filters": "Фильтры карты",
+                "map-filters": "Фильтры карта",
                 "trash-spots": "Мусорные точки",
                 "cleaned-areas": "Очищенные зоны",
                 "planting-zones": "Зоны посадки",
@@ -426,7 +476,6 @@
             return translated;
         }
 
-
         // Function to format time
         function formatTime(minutes) {
             if (minutes < 60) {
@@ -439,7 +488,7 @@
         }
 
         // Function to calculate travel time
-        function calculateTravelTime(distance, mode = 'car') {
+        function calculateTravelTime(distanceKm, mode = 'car') {
             // Средние скорости (в км/ч)
             const speeds = {
                 'car': 50,    // средняя скорость автомобиля в городе
@@ -447,11 +496,10 @@
             };
             
             const speed = speeds[mode] || 50; // по умолчанию автомобиль
-            const timeMinutes = (distance / speed) * 60;
+            const timeMinutes = (distanceKm / speed) * 60;
             
             return timeMinutes;
         }
-
 
         // Initialize fullscreen map with markers and navigation
         document.addEventListener('DOMContentLoaded', function() {
@@ -469,7 +517,6 @@
             let isNavigating = false;
 
             let currentTravelMode = 'car';
-
 
             // Create custom icons
             const trashIcon = L.icon({
@@ -510,6 +557,15 @@
 
             const userIcon = L.icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-gold.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            const destinationIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
                 shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
                 iconSize: [25, 41],
                 iconAnchor: [12, 41],
@@ -561,7 +617,6 @@
                 }
             }
 
-
             // Function to update route time display
             function updateRouteTimeDisplay(distanceKm, mode = 'car') {
                 const timeMinutes = calculateTravelTime(distanceKm, mode);
@@ -583,70 +638,51 @@
                         <!-- Before/After slider -->
                         <div class="before-after-container">
                             <div class="before-image">
-                                <img src="https://via.placeholder.com/250x150/ff0000/ffffff?text=Dirty+Area" alt="Before cleanup" />
+                                <img src="https://via.placeholder.com/250x150/ff0000/ffffff?text=Dirty+Area" alt="Before cleanup">
                             </div>
                             <div class="after-image">
-                                <img src="https://via.placeholder.com/250x150/00ff00/ffffff?text=Clean+Area" alt="After cleanup" />
+                                <img src="https://via.placeholder.com/250x150/00ff00/ffffff?text=Clean+Area" alt="After cleanup">
                             </div>
-                            <input type="range" min="0" max="100" value="50" class="slider" />
+                            <input type="range" min="0" max="100" value="50" class="slider">
                         </div>
                         
-                        <div class="mt-2 text-xs text-gray-500">
-                            Drag slider to see before/after comparison
-                        </div>
-                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition navigate-to-btn" data-lat="${spot.lat}" data-lng="${spot.lng}">
-                            ${t('navigate-here')}
+                        <button class="navigate-btn mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" 
+                                data-lat="${spot.lat}" data-lng="${spot.lng}">
+                            <i class="fas fa-route mr-1"></i> ${t('navigate-here')}
                         </button>
                     `);
-                    
-                // Add event listener for slider when popup opens
+                
+                // Add event listener to the navigate button in the popup
                 marker.on('popupopen', function() {
-                    const slider = document.querySelector('.leaflet-popup-content .slider');
-                    if (slider) {
-                        slider.addEventListener('input', function(e) {
-                            const afterImg = e.target.parentElement.querySelector('.after-image');
-                            if (afterImg) {
-                                afterImg.style.clipPath = `inset(0 0 0 ${e.target.value}%)`;
-                            }
-                        });
-                    }
-                    
-                    // Add event listener for navigate button
-                    const navigateBtn = document.querySelector('.leaflet-popup-content .navigate-to-btn');
-                    if (navigateBtn) {
-                        navigateBtn.addEventListener('click', function() {
-                            const lat = parseFloat(this.getAttribute('data-lat'));
-                            const lng = parseFloat(this.getAttribute('data-lng'));
-                            setDestination(lat, lng);
-                            map.closePopup();
-                        });
-                    }
+                    document.querySelector('.navigate-btn').addEventListener('click', function() {
+                        const lat = parseFloat(this.getAttribute('data-lat'));
+                        const lng = parseFloat(this.getAttribute('data-lng'));
+                        setDestination(lat, lng);
+                    });
                 });
             });
 
+            // Add other markers (cleaned areas, planting zones, events)
             cleanedAreas.forEach(area => {
                 const marker = L.marker([area.lat, area.lng], { icon: cleanedIcon })
                     .addTo(map)
                     .bindPopup(`
                         <b>${area.title}</b><br>
                         ${area.description}<br>
-                        Volunteers: ${area.volunteers}<br>
-                        <span class="text-green-600">Area Cleaned</span>
-                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition navigate-to-btn" data-lat="${area.lat}" data-lng="${area.lng}">
-                            ${t('navigate-here')}
+                        Volunteers: ${area.volunteers}
+                        
+                        <button class="navigate-btn mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" 
+                                data-lat="${area.lat}" data-lng="${area.lng}">
+                            <i class="fas fa-route mr-1"></i> ${t('navigate-here')}
                         </button>
                     `);
-                    
+                
                 marker.on('popupopen', function() {
-                    const navigateBtn = document.querySelector('.leaflet-popup-content .navigate-to-btn');
-                    if (navigateBtn) {
-                        navigateBtn.addEventListener('click', function() {
-                            const lat = parseFloat(this.getAttribute('data-lat'));
-                            const lng = parseFloat(this.getAttribute('data-lng'));
-                            setDestination(lat, lng);
-                            map.closePopup();
-                        });
-                    }
+                    document.querySelector('.navigate-btn').addEventListener('click', function() {
+                        const lat = parseFloat(this.getAttribute('data-lat'));
+                        const lng = parseFloat(this.getAttribute('data-lng'));
+                        setDestination(lat, lng);
+                    });
                 });
             });
 
@@ -656,23 +692,20 @@
                     .bindPopup(`
                         <b>${zone.title}</b><br>
                         ${zone.description}<br>
-                        Date: ${zone.date}<br>
-                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>
-                        <button class="mt-2 bg-blue-600 text-white px-2 py-1 rounded text-sm hover:bg-blue-700 transition navigate-to-btn" data-lat="${zone.lat}" data-lng="${zone.lng}">
-                            ${t('navigate-here')}
+                        Date: ${zone.date}
+                        
+                        <button class="navigate-btn mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" 
+                                data-lat="${zone.lat}" data-lng="${zone.lng}">
+                            <i class="fas fa-route mr-1"></i> ${t('navigate-here')}
                         </button>
                     `);
-                    
+                
                 marker.on('popupopen', function() {
-                    const navigateBtn = document.querySelector('.leaflet-popup-content .navigate-to-btn');
-                    if (navigateBtn) {
-                        navigateBtn.addEventListener('click', function() {
-                            const lat = parseFloat(this.getAttribute('data-lat'));
-                            const lng = parseFloat(this.getAttribute('data-lng'));
-                            setDestination(lat, lng);
-                            map.closePopup();
-                        });
-                    }
+                    document.querySelector('.navigate-btn').addEventListener('click', function() {
+                        const lat = parseFloat(this.getAttribute('data-lat'));
+                        const lng = parseFloat(this.getAttribute('data-lng'));
+                        setDestination(lat, lng);
+                    });
                 });
             });
 
@@ -682,174 +715,110 @@
                     .bindPopup(`
                         <b>${event.title}</b><br>
                         ${event.description}<br>
-                        Participants: ${event.participants}<br>
-                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>
-                        <button class="mt-2 bg-blue-600 text-white px-2 py-1 rounded text-sm hover:bg-blue-700 transition navigate-to-btn" data-lat="${event.lat}" data-lng="${event.lng}">
-                            ${t('navigate-here')}
+                        Participants: ${event.participants}
+                        
+                        <button class="navigate-btn mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" 
+                                data-lat="${event.lat}" data-lng="${event.lng}">
+                            <i class="fas fa-route mr-1"></i> ${t('navigate-here')}
                         </button>
                     `);
-                    
+                
                 marker.on('popupopen', function() {
-                    const navigateBtn = document.querySelector('.leaflet-popup-content .navigate-to-btn');
-                    if (navigateBtn) {
-                        navigateBtn.addEventListener('click', function() {
-                            const lat = parseFloat(this.getAttribute('data-lat'));
-                            const lng = parseFloat(this.getAttribute('data-lng'));
-                            setDestination(lat, lng);
-                            map.closePopup();
-                        });
-                    }
+                    document.querySelector('.navigate-btn').addEventListener('click', function() {
+                        const lat = parseFloat(this.getAttribute('data-lat'));
+                        const lng = parseFloat(this.getAttribute('data-lng'));
+                        setDestination(lat, lng);
+                    });
                 });
             });
 
-            // Add circles
-            L.circle([51.1900, 71.4000], {
-                color: 'orange',
-                fillColor: 'yellow',
-                fillOpacity: 0.5,
-                radius: 500
-            }).addTo(map).bindPopup("<b>Industrial Zone</b><br>Area with air quality concerns");
-
-            L.circle([51.1450, 71.4150], {
-                color: 'blue',
-                fillColor: 'cyan',
-                fillOpacity: 0.5,
-                radius: 300
-            }).addTo(map).bindPopup("<b>Improved Zone</b><br>Former polluted area now restored by volunteers");
-
-            // Function to get user's location
-            function locateUser() {
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(
-                        function(position) {
-                            userLocation = [position.coords.latitude, position.coords.longitude];
-                            
-                            // Remove existing user marker if any
-                            if (userLocationMarker) {
-                                map.removeLayer(userLocationMarker);
-                            }
-                            
-                            // Add user location marker
-                            userLocationMarker = L.marker(userLocation, { icon: userIcon })
-                                .addTo(map)
-                                .bindPopup(t('your-location'))
-                                .openPopup();
-                                
-                            // Center map on user location
-                            map.setView(userLocation, 15);
-                            
-                            // If navigating, recalculate route
-                            if (isNavigating && destinationMarker) {
-                                calculateRoute(userLocation, destinationMarker.getLatLng());
-                            }
-                        },
-                        function(error) {
-                            alert(t('location-error'));
-                            console.error("Geolocation error:", error);
-                        },
-                        {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                            maximumAge: 60000
-                        }
-                    );
-                } else {
-                    alert(t('geolocation-error'));
-                }
-            }
-
-            // Function to set destination
-            function setDestination(lat, lng) {
-                // Remove existing destination marker if any
-                if (destinationMarker) {
-                    map.removeLayer(destinationMarker);
-                }
-                
-                // Add destination marker
-                destinationMarker = L.marker([lat, lng])
-                    .addTo(map)
-                    .bindPopup(t('destination'))
-                    .openPopup();
-                
-                // If user location is known, calculate route
-                if (userLocation) {
-                    calculateRoute(userLocation, [lat, lng]);
-                } else {
-                    // Ask for user location
-                    if (confirm(t('location-permission'))) {
-                        locateUser();
-                    }
-                }
-            }
-
-            // Function to calculate route
-            function calculateRoute(from, to) {
-                // Remove existing route if any
-                if (routingControl) {
-                    map.removeControl(routingControl);
-                }
-                
-                // Create new route
-                routingControl = L.Routing.control({
-                    waypoints: [
-                        L.latLng(from[0], from[1]),
-                        L.latLng(to[0], to[1])
-                    ],
-                    routeWhileDragging: false,
-                    showAlternatives: false,
-                    lineOptions: {
-                        styles: [{color: '#16a34a', opacity: 0.7, weight: 5}]
-                    },
-                    createMarker: function() { return null; }, // Don't create markers
-                    collapsible: true,
-                    fitSelectedRoutes: true,
-                    show: false
-                }).addTo(map);
-                
-                // Show route info panel
-                document.getElementById('route-info-panel').classList.remove('hidden');
-                isNavigating = true;
-                
-                // Handle route found event
-                routingControl.on('routesfound', function(e) {
-                    const routes = e.routes;
-                    const summary = routes[0].summary;
-
-                    const distanceKm = summary.totalDistance / 1000;
-                    
-                    // Update route info
-                    document.getElementById('route-distance').textContent = 
-                        `${t('distance').replace(': -', '')}: ${distanceKm.toFixed(1)} km`;
-                    
-                    // Update time with current travel mode
-                    updateRouteTimeDisplay(distanceKm, currentTravelMode);
-
-                    
-                    // Update route info
-                    document.getElementById('route-distance').textContent = 
-                        `${t('distance').replace(': -', '')}: ${(summary.totalDistance / 1000).toFixed(1)} km`;
-                    document.getElementById('route-time').textContent = 
-                        `${t('time').replace(': -', '')}: ${Math.round(summary.totalTime / 60)} min`;
-
-                    
-                    // Add instructions
-                    const instructionsContainer = document.getElementById('route-instructions');
-                    instructionsContainer.innerHTML = '';
-                    
-                    routes[0].instructions.forEach(function(instruction, index) {
-                        const instructionElement = document.createElement('div');
-                        instructionElement.className = 'mb-1';
-                        
-                        // Translate the instruction
-                        const translatedInstruction = translateInstruction(instruction.text);
-                        
-                        instructionElement.innerHTML = `${index + 1}. ${translatedInstruction}`;
-                        instructionsContainer.appendChild(instructionElement);
+            // Initialize before/after sliders
+            function initSliders() {
+                document.querySelectorAll('.slider').forEach(slider => {
+                    slider.addEventListener('input', function() {
+                        const container = this.parentElement;
+                        const afterImage = container.querySelector('.after-image');
+                        afterImage.style.clipPath = `inset(0 0 0 ${this.value}%)`;
                     });
                 });
             }
 
-            // Function to clear route
+            // Set destination function
+            function setDestination(lat, lng) {
+                // Remove existing destination marker
+                if (destinationMarker) {
+                    map.removeLayer(destinationMarker);
+                }
+                
+                // Add new destination marker
+                destinationMarker = L.marker([lat, lng], { icon: destinationIcon })
+                    .addTo(map)
+                    .bindPopup(t('destination'))
+                    .openPopup();
+                
+                // If user location is known, start navigation
+                if (userLocation) {
+                    startNavigation(userLocation, [lat, lng]);
+                } else {
+                    // Show route info panel
+                    document.getElementById('route-info-panel').classList.remove('hidden');
+                    document.getElementById('route-distance').textContent = `${t('distance')}`;
+                    document.getElementById('route-time').textContent = `${t('time')}`;
+                }
+            }
+
+            // Start navigation function
+            function startNavigation(start, end) {
+                // Remove existing routing control
+                if (routingControl) {
+                    map.removeControl(routingControl);
+                }
+                
+                // Create new routing control
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(start[0], start[1]),
+                        L.latLng(end[0], end[1])
+                    ],
+                    routeWhileDragging: true,
+                    lineOptions: {
+                        styles: [{color: '#16a34a', weight: 5}]
+                    },
+                    createMarker: function(i, waypoint, n) {
+                        // Use custom icons for start and end points
+                        if (i === 0) {
+                            return L.marker(waypoint.latLng, { icon: userIcon });
+                        } else {
+                            return L.marker(waypoint.latLng, { icon: destinationIcon });
+                        }
+                    },
+                    showAlternatives: false,
+                    addWaypoints: false,
+                    draggableWaypoints: false
+                }).addTo(map);
+                
+                isNavigating = true;
+                
+                // Show route info panel
+                document.getElementById('route-info-panel').classList.remove('hidden');
+                
+                // Listen for route found event
+                routingControl.on('routesfound', function(e) {
+                    const routes = e.routes;
+                    const route = routes[0];
+                    
+                    // Update route information
+                    const distanceKm = (route.summary.totalDistance / 1000).toFixed(1);
+                    document.getElementById('route-distance').textContent = 
+                        `${t('distance').replace(': -', '')}: ${distanceKm} km`;
+                    
+                    updateRouteTimeDisplay(distanceKm, currentTravelMode);
+                    
+                    // Убрал отображение инструкций маршрута
+                });
+            }
+
+            // Clear route function
             function clearRoute() {
                 if (routingControl) {
                     map.removeControl(routingControl);
@@ -861,58 +830,109 @@
                     destinationMarker = null;
                 }
                 
-                // Hide route info panel
                 document.getElementById('route-info-panel').classList.add('hidden');
                 isNavigating = false;
-                
-                // Reset route info
-                document.getElementById('route-distance').textContent = t('distance');
-                document.getElementById('route-time').textContent = t('time');
             }
 
-            // Event listeners for buttons
-            document.getElementById('locate-me-btn').addEventListener('click', locateUser);
-            document.getElementById('start-navigation-btn').addEventListener('click', function() {
-                if (!userLocation) {
-                    locateUser();
+            // Function to request location permission
+            function requestLocation() {
+                if (!navigator.geolocation) {
+                    alert(t('geolocation-error'));
+                    return;
                 }
                 
+                // Ask for permission with a confirmation dialog
+                if (confirm(t('location-permission'))) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            userLocation = [position.coords.latitude, position.coords.longitude];
+                            
+                            // Remove existing user location marker
+                            if (userLocationMarker) {
+                                map.removeLayer(userLocationMarker);
+                            }
+                            
+                            // Add new user location marker
+                            userLocationMarker = L.marker(userLocation, { icon: userIcon })
+                                .addTo(map)
+                                .bindPopup(t('your-location'))
+                                .openPopup();
+                            
+                            // Center map on user location
+                            map.setView(userLocation, 15);
+                            
+                            // If destination is set, start navigation
+                            if (destinationMarker) {
+                                const destLatLng = destinationMarker.getLatLng();
+                                startNavigation(userLocation, [destLatLng.lat, destLatLng.lng]);
+                            }
+                        },
+                        function(error) {
+                            alert(t('location-error'));
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 5000,
+                            maximumAge: 0
+                        }
+                    );
+                }
+            }
+
+            // Request location on page load
+            requestLocation();
+
+            // Locate me button functionality
+            document.getElementById('locate-me-btn').addEventListener('click', function() {
+                requestLocation();
+            });
+
+            // Start navigation button functionality
+            document.getElementById('start-navigation-btn').addEventListener('click', function() {
                 if (!destinationMarker) {
                     alert(t('need-destination'));
+                    return;
                 }
+                
+                if (!userLocation) {
+                    // Try to get user location first
+                    requestLocation();
+                    return;
+                }
+                
+                const destLatLng = destinationMarker.getLatLng();
+                startNavigation(userLocation, [destLatLng.lat, destLatLng.lng]);
             });
-            document.getElementById('clear-route-btn').addEventListener('click', clearRoute);
 
+            // Clear route button functionality
+            document.getElementById('clear-route-btn').addEventListener('click', function() {
+                clearRoute();
+            });
 
-            // Transport mode selector
+            // Transport mode selection
             document.querySelectorAll('.transport-mode-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    // Remove active class from all buttons
+                    // Update active state
                     document.querySelectorAll('.transport-mode-btn').forEach(b => {
                         b.classList.remove('active');
                     });
-                    
-                    // Add active class to clicked button
                     this.classList.add('active');
                     
                     // Update current travel mode
                     currentTravelMode = this.getAttribute('data-mode');
                     
-                    // If we have an active route, update the time display
-                    if (routingControl && routingControl.getRoutes().length > 0) {
-                        const distance = routingControl.getRoutes()[0].summary.totalDistance / 1000;
-                        updateRouteTimeDisplay(distance, currentTravelMode);
+                    // If navigating, update route time
+                    if (isNavigating && routingControl) {
+                        const distanceElement = document.getElementById('route-distance');
+                        if (distanceElement.textContent !== 'Distance: -') {
+                            const distanceKm = parseFloat(distanceElement.textContent.replace('Distance: ', '').replace(' km', ''));
+                            updateRouteTimeDisplay(distanceKm, currentTravelMode);
+                        }
                     }
                 });
             });
 
-
-            // Click on map to set destination
-            map.on('click', function(e) {
-                setDestination(e.latlng.lat, e.latlng.lng);
-            });
-
-            // Language switcher functionality
+            // Language toggle functionality
             document.getElementById('language-toggle').addEventListener('click', function() {
                 const dropdown = document.getElementById('language-dropdown');
                 dropdown.classList.toggle('hidden');
@@ -929,15 +949,26 @@
                 });
             });
 
-            // Request location on load
-            setTimeout(function() {
-                if (confirm(t('location-permission'))) {
-                    locateUser();
-                }
-            }, 1000);
-
-            // Initial translation
+            // Initialize sliders and translations
+            initSliders();
             translateText();
+
+            // Close language dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const languageToggle = document.getElementById('language-toggle');
+                const languageDropdown = document.getElementById('language-dropdown');
+                
+                if (!languageToggle.contains(event.target) && !languageDropdown.contains(event.target)) {
+                    languageDropdown.classList.add('hidden');
+                }
+            });
+
+            // Mobile menu toggle
+            document.getElementById('menu-toggle').addEventListener('click', function() {
+                const navMenu = document.getElementById('nav-menu');
+                navMenu.classList.toggle('hidden');
+                navMenu.classList.toggle('flex');
+            });
         });
     </script>
 </body>
