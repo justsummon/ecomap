@@ -604,3 +604,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+// Fix for slider functionality
+    function initSliders() {
+        document.querySelectorAll('.slider').forEach(slider => {
+            slider.addEventListener('input', function(e) {
+                const container = this.closest('.before-after-container');
+                const afterImg = container.querySelector('.after-image');
+                if (afterImg) {
+                    afterImg.style.clipPath = `inset(0 0 0 ${this.value}%)`;
+                }
+            });
+        });
+    }
+
+    // Reinitialize sliders when popup opens
+    map.on('popupopen', function() {
+        setTimeout(initSliders, 100); // Small delay to ensure popup is fully rendered
+    });
+
+    // Initialize sliders on page load
+    setTimeout(initSliders, 1000);
