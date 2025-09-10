@@ -1,10 +1,11 @@
 // Константы
 const AUTH_KEY = 'isLoggedIn';
 
-// Проверяем состояние авторизации при загрузке страницы
-function checkAuthState() {
+// Функция для обновления навигации на всех страницах
+function updateNavigation() {
     const isLoggedIn = localStorage.getItem(AUTH_KEY) === 'true';
     const authBtn = document.getElementById('auth-btn');
+    const loginBtn = document.getElementById('login-btn');
 
     if (authBtn) {
         if (isLoggedIn) {
@@ -19,6 +20,26 @@ function checkAuthState() {
             };
         }
     }
+
+    if (loginBtn) {
+        if (isLoggedIn) {
+            loginBtn.textContent = 'Profile';
+            loginBtn.onclick = function() {
+                window.location.href = 'profile.html';
+            };
+        } else {
+            loginBtn.textContent = 'Sign In';
+            loginBtn.onclick = function() {
+                window.location.href = 'profile.html';
+            };
+        }
+    }
+}
+
+// Проверяем состояние авторизации при загрузке страницы
+function checkAuthState() {
+    const isLoggedIn = localStorage.getItem(AUTH_KEY) === 'true';
+    updateNavigation();
 }
 
 // Открытие модального окна входа
@@ -39,23 +60,31 @@ function closeLoginModal() {
 
 // Функция входа
 function loginUser() {
-    // Здесь должен быть реальный запрос к серверу
-    // Для демонстрации используем localStorage
     localStorage.setItem(AUTH_KEY, 'true');
-    checkAuthState();
+    updateNavigation();
     closeLoginModal();
-    
-    // Обновляем страницу профиля если мы на ней
-    if (window.location.pathname.includes('profile.html')) {
-        window.location.reload();
-    }
 }
 
 // Функция выхода
 function logoutUser() {
     localStorage.setItem(AUTH_KEY, 'false');
-    checkAuthState();
+    updateNavigation();
     window.location.href = 'index.html';
+}
+
+// Функции для социального входа (заглушки)
+function signInWithGoogle() {
+    alert('Google Sign In would be implemented here');
+    localStorage.setItem(AUTH_KEY, 'true');
+    updateNavigation();
+    closeLoginModal();
+}
+
+function signInWithFacebook() {
+    alert('Facebook Sign In would be implemented here');
+    localStorage.setItem(AUTH_KEY, 'true');
+    updateNavigation();
+    closeLoginModal();
 }
 
 // Инициализация при загрузке документа
@@ -69,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Закрытие модального окна по клику на крестик
+    // Закрытие модального окна
     const closeBtn = document.querySelector('.close');
     if (closeBtn) {
         closeBtn.addEventListener('click', closeLoginModal);
