@@ -453,17 +453,9 @@ document.addEventListener('DOMContentLoaded', function () {
             { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
         ];
 
-            // Store all markers for filter functionality
-    const allMarkers = {
-        'trash-spots': [],
-        'cleaned-areas': [], 
-        'planting-zones': [],
-        'events': []
-    };
-
-    // Create markers and store references
-    trashSpots.forEach(spot => {
-        const marker = L.marker([spot.lat, spot.lng], { icon: trashIcon })
+        // Add markers to map - UPDATED CODE WITH LOGOS
+        trashSpots.forEach(spot => {
+            L.marker([spot.lat, spot.lng], { icon: trashIcon })
             .addTo(map)
             .bindPopup(`
                 <img src="logos/trash-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
@@ -473,120 +465,78 @@ document.addEventListener('DOMContentLoaded', function () {
                     <span class="text-red-600">Severity: ${spot.severity}</span>
                 </div>
             `);
-        allMarkers['trash-spots'].push(marker);
-    });
+        });
 
-    cleanedAreas.forEach(area => {
-        let beforePhoto, afterPhoto;
+        cleanedAreas.forEach(area => {
+            L.marker([area.lat, area.lng], { icon: cleanedIcon })
+            .addTo(map)
+            .bindPopup(`
+    <img src="logos/bin-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
+    <div class="ml-0">
+        <b>${area.title}</b><br>
+        ${area.description}<br>
+        Volunteers: ${area.volunteers}<br>
+        <span class="text-green-600">Area Cleaned</span><br>
         
-        if (area.title === "Central Park Cleanup") {
-            beforePhoto = "images/a-before.jpg";
-            afterPhoto = "images/b-after.jpg";
-        } else if (area.title === "Esil River Cleanup") {
-            beforePhoto = "images/c-before.jpg";
-            afterPhoto = "images/d-after.jpg";
-        } else {
-            beforePhoto = "https://via.placeholder.com/250x150/ff0000/ffffff?text=Before";
-            afterPhoto = "https://via.placeholder.com/250x150/00ff00/ffffff?text=After";
-        }
+        <!-- Before/After slider -->
+        <div class="before-after-container">
+            <div class="before-image">
+                <img src="images/${area.title.toLowerCase().replace(/\s+/g, '-')}-before.jpg" alt="Before cleanup" />
+            </div>
+            <div class="after-image">
+                <img src="images/${area.title.toLowerCase().replace(/\s+/g, '-')}-after.jpg" alt="After cleanup" />
+            </div>
+            <input type="range" min="0" max="100" value="50" class="slider" />
+        </div>
+        <div class="mt-2 text-xs text-gray-500">
+            Drag slider to see before/after comparison
+        </div>
+    </div>
+`);
 
-        const marker = L.marker([area.lat, area.lng], { icon: cleanedIcon })
-            .addTo(map)
-            .bindPopup(`
-                <img src="logos/bin-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
-                <div class="ml-0">
-                    <b>${area.title}</b><br>
-                    ${area.description}<br>
-                    Volunteers: ${area.volunteers}<br>
-                    <span class="text-green-600">Area Cleaned</span><br>
-                    
-                    <div class="before-after-container">
-                        <div class="before-image">
-                            <img src="${beforePhoto}" alt="Before cleanup" onerror="this.src='https://via.placeholder.com/250x150/ff0000/ffffff?text=Error+Loading+Before'"/>
-                        </div>
-                        <div class="after-image">
-                            <img src="${afterPhoto}" alt="After cleanup" onerror="this.src='https://via.placeholder.com/250x150/00ff00/ffffff?text=Error+Loading+After'"/>
-                        </div>
-                        <input type="range" min="0" max="100" value="50" class="slider" />
+        plantingZones.forEach(zone => {
+            L.marker([zone.lat, zone.lng], { icon: plantingIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <img src="logos/event-logo.png" class="popup-logo">
+                    <div class="ml-0">
+                        <b>${zone.title}</b><br>
+                        ${zone.description}<br>
+                        Date: ${zone.date}<br>
+                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>
                     </div>
-                    <div class="mt-2 text-xs text-gray-500">
-                        Drag slider to see before/after comparison
+                `);
+        });
+
+        events.forEach(event => {
+            L.marker([event.lat, event.lng], { icon: eventIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <img src="logos/event-logo.png" class="popup-logo">
+                    <div class="ml-0">
+                        <b>${event.title}</b><br>
+                        ${event.description}<br>
+                        Participants: ${event.participants}<br>
+                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>
                     </div>
-                </div>
-            `);
-        allMarkers['cleaned-areas'].push(marker);
-    });
-
-    plantingZones.forEach(zone => {
-        const marker = L.marker([zone.lat, zone.lng], { icon: plantingIcon })
-            .addTo(map)
-            .bindPopup(`
-                <img src="logos/event-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
-                <div class="ml-0">
-                    <b>${zone.title}</b><br>
-                    ${zone.description}<br>
-                    Date: ${zone.date}<br>
-                    <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>
-                </div>
-            `);
-        allMarkers['planting-zones'].push(marker);
-    });
-
-    events.forEach(event => {
-        const marker = L.marker([event.lat, event.lng], { icon: eventIcon })
-            .addTo(map)
-            .bindPopup(`
-                <img src="logos/event-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
-                <div class="ml-0">
-                    <b>${event.title}</b><br>
-                    ${event.description}<br>
-                    Participants: ${event.participants}<br>
-                    <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>
-                </div>
-            `);
-        allMarkers['events'].push(marker);
-    });
-
-    // Add filter functionality
-    document.getElementById('trash-spots').addEventListener('change', function() {
-        allMarkers['trash-spots'].forEach(marker => {
-            if (this.checked) {
-                map.addLayer(marker);
-            } else {
-                map.removeLayer(marker);
-            }
+                `);
         });
-    });
 
-    document.getElementById('cleaned-areas').addEventListener('change', function() {
-        allMarkers['cleaned-areas'].forEach(marker => {
-            if (this.checked) {
-                map.addLayer(marker);
-            } else {
-                map.removeLayer(marker);
-            }
-        });
-    });
+        // Add circles
+        L.circle([51.1900, 71.4000], {
+            color: 'orange',
+            fillColor: 'yellow',
+            fillOpacity: 0.5,
+            radius: 500
+        }).addTo(map).bindPopup("<b>Industrial Zone</b><br>Area with air quality concerns");
 
-    document.getElementById('planting-zones').addEventListener('change', function() {
-        allMarkers['planting-zones'].forEach(marker => {
-            if (this.checked) {
-                map.addLayer(marker);
-            } else {
-                map.removeLayer(marker);
-            }
-        });
-    });
-
-    document.getElementById('events').addEventListener('change', function() {
-        allMarkers['events'].forEach(marker => {
-            if (this.checked) {
-                map.addLayer(marker);
-            } else {
-                map.removeLayer(marker);
-            }
-        });
-    });
+        L.circle([51.1450, 71.4150], {
+            color: 'blue',
+            fillColor: 'cyan',
+            fillOpacity: 0.5,
+            radius: 300
+        }).addTo(map).bindPopup("<b>Improved Zone</b><br>Former polluted area now restored by volunteers");
+    }
 
     // Challenge button functionality if on knowledge page
     if (document.getElementById('knowledge')) {
@@ -639,23 +589,3 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
-// Fix for slider functionality
-    function initSliders() {
-        document.querySelectorAll('.slider').forEach(slider => {
-            slider.addEventListener('input', function(e) {
-                const container = this.closest('.before-after-container');
-                const afterImg = container.querySelector('.after-image');
-                if (afterImg) {
-                    afterImg.style.clipPath = `inset(0 0 0 ${this.value}%)`;
-                }
-            });
-        });
-    }
-
-    // Reinitialize sliders when popup opens
-    map.on('popupopen', function() {
-        setTimeout(initSliders, 100); // Small delay to ensure popup is fully rendered
-    });
-
-    // Initialize sliders on page load
-    setTimeout(initSliders, 1000);
