@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoMap - Sign In</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .slide-up { animation: slideUp 0.5s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .btn-transition { transition: all 0.3s ease; }
+        .btn-transition:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        
+        /* Стили для переключения между логином и регистрацией */
+        .auth-tab { cursor: pointer; padding: 12px 24px; border-bottom: 3px solid transparent; }
+        .auth-tab.active { border-bottom-color: #16a34a; font-weight: bold; }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+        
+        /* Стили для валидации пароля */
+        .password-strength { 
+            height: 5px; 
+            margin-top: 5px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        .strength-weak { background-color: #ef4444; width: 25%; }
+        .strength-medium { background-color: #f59e0b; width: 50%; }
+        .strength-strong { background-color: #10b981; width: 75%; }
+        .strength-very-strong { background-color: #16a34a; width: 100%; }
+        
+        .requirement { 
+            font-size: 0.75rem; 
+            margin-top: 2px;
+            transition: color 0.3s ease;
+        }
+        .requirement.met { color: #10b981; }
+        .requirement.unmet { color: #6b7280; }
+    </style>
+</head>
+<body class="bg-green-50 min-h-screen flex items-center justify-center p-4">
+    <!-- Auth Container -->
+    <div id="auth-container" class="w-full max-w-md">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden slide-up">
+            <!-- Tabs -->
+            <div class="flex border-b">
+                <div class="auth-tab active w-1/2 text-center" data-tab="login">Sign In</div>
+                <div class="auth-tab w-1/2 text-center" data-tab="register">Sign Up</div>
+            </div>
+            
+            <!-- Header -->
+            <div class="bg-green-600 py-6 px-6 text-center">
+                <div class="flex items-center justify-center mb-4">
+                    <i class="fas fa-leaf text-4xl text-white mr-3"></i>
+                    <h1 class="text-3xl font-bold text-white">EcoMap</h1>
+                </div>
+                <p class="text-green-100">Join our eco-friendly community</p>
+            </div>
+            
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form active px-8 py-6">
+                <form id="loginForm">
+                    <div class="mb-4">
+                        <label for="login-email" class="block text-gray-700 text-sm font-medium mb-2">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input type="email" id="login-email" class="pl-10 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="your@email.com" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="login-password" class="block text-gray-700 text-sm font-medium mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="login-password" class="pl-10 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="••••••••" required>
+                        </div>
+                        <div class="text-right mt-2">
+                            <a href="#" class="text-sm text-green-600 hover:underline" id="forgot-password-link">Forgot Password?</a>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <button type="submit" class="btn-transition w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">
+                            Sign In
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center text-sm text-gray-600 mb-4">Or sign in with</div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <button class="btn-transition py-2 px-4 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50" onclick="signInWithGoogle()">
+                        <i class="fab fa-google text-red-500 mr-2"></i>
+                        <span>Google</span>
+                    </button>
+                    <button class="btn-transition py-2 px-4 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50" onclick="signInWithFacebook()">
+                        <i class="fab fa-facebook text-blue-600 mr-2"></i>
+                        <span>Facebook</span>
+                    </button>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-gray-600 text-sm">Don't have an account? <a href="#" class="text-green-600 hover:underline" id="switch-to-register">Sign Up</a></p>
+                </div>
+            </div>
+            
+            <!-- Register Form -->
+            <div id="register-form" class="auth-form px-8 py-6">
+                <form id="registerForm">
+                    <div class="mb-4">
+                        <label for="register-name" class="block text-gray-700 text-sm font-medium mb-2">Full Name</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <input type="text" id="register-name" class="pl-10 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Your full name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="register-email" class="block text-gray-700 text-sm font-medium mb-2">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input type="email" id="register-email" class="pl-10 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="your@email.com" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="register-password" class="block text-gray-700 text-sm font-medium mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="register-password" class="pl-10 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="••••••••" required>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <i class="fas fa-eye-slash text-gray-400 cursor-pointer" id="toggle-password"></i>
+                            </div>
+                        </div>
+                        <div class="password-strength mt-2" id="password-strength"></div>
+                        <div class="mt-2">
+                            <div class="requirement unmet" id="length-req">At least 8 characters</div>
+                            <div class="requirement unmet" id="uppercase-req">Contains uppercase letter</div>
+                            <div class="requirement unmet" id="number-req">Contains number</div>
+                            <div class="requirement unmet" id="special-req">Contains special character</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="register-confirm-password" class="block text-gray-700 text-sm font-medium mb-2">Confirm Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="register-confirm-password" class="pl-10 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="••••••••" required>
+                        </div>
+                        <div class="text-sm text-red-500 mt-1 hidden" id="password-error">Passwords do not match!</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <button type="submit" class="btn-transition w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">
+                            Create Account
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center text-sm text-gray-600 mb-4">Or sign up with</div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <button class="btn-transition py-2 px-4 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50" onclick="signUpWithGoogle()">
+                        <i class="fab fa-google text-red-500 mr-2"></i>
+                        <span>Google</span>
+                    </button>
+                    <button class="btn-transition py-2 px-4 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50" onclick="signUpWithFacebook()">
+                        <i class="fab fa-facebook text-blue-600 mr-2"></i>
+                        <span>Facebook</span>
+                    </button>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-gray-600 text-sm">Already have an account? <a href="#" class="text-green-600 hover:underline" id="switch-to-login">Sign In</a></p>
+                </div>
+            </div>
+            
+            <!-- Forgot Password Form -->
+            <div id="forgot-password-form" class="auth-form px-8 py-6 hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Reset Password</h3>
+                <form id="forgotPasswordForm">
+                    <div class="mb-6">
+                        <label for="reset-email" class="block text-gray-700 text-sm font-medium mb-2">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input type="email" id="reset-email" class="pl-10 w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="your@email.com" required>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">Enter your email and we'll send you a link to reset your password.</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <button type="submit" class="btn-transition w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">
+                            Send Reset Link
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center">
+                    <p class="text-gray-600 text-sm">Remember your password? <a href="#" class="text-green-600 hover:underline" id="back-to-login">Back to Sign In</a></p>
+                </div>
+            </div>
+            
+            <div class="px-8 pb-6">
+                <div class="text-center">
+                    <p class="text-gray-600 text-sm">By signing in, you agree to our <a href="#" class="text-green-600 hover:underline">Terms of Service</a> and <a href="#" class="text-green-600 hover:underline">Privacy Policy</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-sm mx-4 text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check text-green-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2" id="success-title">Success!</h3>
+            <p class="text-gray-600 mb-4" id="success-message">Your action was completed successfully.</p>
+            <button id="modal-ok-btn" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Функции для социальных кнопок
+        function signInWithGoogle() {
+            alert('Google Sign In would be implemented here');
+            // Здесь будет реальная интеграция с Google OAuth
+            simulateSocialLogin('google');
+        }
+
+        function signInWithFacebook() {
+            alert('Facebook Sign In would be implemented here');
+            // Здесь будет реальная интеграция с Facebook OAuth
+            simulateSocialLogin('facebook');
+        }
+
+        function signUpWithGoogle() {
+            alert('Google Sign Up would be implemented here');
+            simulateSocialSignup('google');
+        }
+
+        function signUpWithFacebook() {
+            alert('Facebook Sign Up would be implemented here');
+            simulateSocialSignup('facebook');
+        }
+
+        function simulateSocialLogin(provider) {
+            // Симуляция успешного входа через социальные сети
+            setTimeout(() => {
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userEmail', `user@${provider}.com`);
+                localStorage.setItem('userName', `${provider} User`);
+                showSuccessModal('Login Successful', 'You have successfully signed in with ' + provider, 'profile.html');
+            }, 1000);
+        }
+
+        function simulateSocialSignup(provider) {
+            // Симуляция успешной регистрации через социальные сети
+            setTimeout(() => {
+                showSuccessModal('Account Created', 'Your account has been successfully created with ' + provider, 'profile.html');
+            }, 1000);
+        }
+
+        // Переключение между вкладками
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                
+                // Убираем активный класс у всех вкладок
+                document.querySelectorAll('.auth-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                // Добавляем активный класс текущей вкладке
+                this.classList.add('active');
+                
+                // Скрываем все формы
+                document.querySelectorAll('.auth-form').forEach(form => {
+                    form.classList.remove('active');
+                    form.classList.add('hidden');
+                });
+                
+                // Показываем нужную форму
+                document.getElementById(`${tabName}-form`).classList.remove('hidden');
+                document.getElementById(`${tabName}-form`).classList.add('active');
+            });
+        });
+
+        // Переключение видимости пароля
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            const passwordField = document.getElementById('register-password');
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            
+            // Переключение иконки
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // Валидация пароля
+        document.getElementById('register-password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('password-strength');
+            const requirements = {
+                length: document.getElementById('length-req'),
+                uppercase: document.getElementById('uppercase-req'),
+                number: document.getElementById('number-req'),
+                special: document.getElementById('special-req')
+            };
+            
+            // Сброс стилей
+            strengthBar.className = 'password-strength mt-2';
+            
+            // Проверка требований
+            const hasLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            
+            // Обновление требований
+            requirements.length.classList.toggle('met', hasLength);
+            requirements.length.classList.toggle('unmet', !hasLength);
+            
+            requirements.uppercase.classList.toggle('met', hasUppercase);
+            requirements.uppercase.classList.toggle('unmet', !hasUppercase);
+            
+            requirements.number.classList.toggle('met', hasNumber);
+            requirements.number.classList.toggle('unmet', !hasNumber);
+            
+            requirements.special.classList.toggle('met', hasSpecial);
+            requirements.special.classList.toggle('unmet', !hasSpecial);
+            
+            // Определение силы пароля
+            let strength = 0;
+            if (hasLength) strength++;
+            if (hasUppercase) strength++;
+            if (hasNumber) strength++;
+            if (hasSpecial) strength++;
+            
+            // Обновление индикатора силы
+            if (strength > 0) {
+                strengthBar.classList.add('strength-weak');
+            }
+            if (strength > 2) {
+                strengthBar.classList.remove('strength-weak');
+                strengthBar.classList.add('strength-medium');
+            }
+            if (strength > 3) {
+                strengthBar.classList.remove('strength-medium');
+                strengthBar.classList.add('strength-strong');
+            }
+            if (strength > 4) {
+                strengthBar.classList.remove('strength-strong');
+                strengthBar.classList.add('strength-very-strong');
+            }
+        });
+
+        // Проверка совпадения паролей
+        document.getElementById('register-confirm-password').addEventListener('input', function() {
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = this.value;
+            const errorElement = document.getElementById('password-error');
+            
+            if (confirmPassword && password !== confirmPassword) {
+                errorElement.classList.remove('hidden');
+            } else {
+                errorElement.classList.add('hidden');
+            }
+        });
+
+        // Обработка отправки формы входа
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (email && password) {
+                // В реальном приложении здесь был бы запрос к серверу
+                setTimeout(() => {
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userName', email.split('@')[0]); // Используем часть email как имя
+                    showSuccessModal('Login Successful', 'You have successfully signed in to your account', 'profile.html');
+                }, 500);
+            }
+        });
+        
+        // Обработка отправки формы регистрации
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+            
+            // Проверка совпадения паролей
+            if (password !== confirmPassword) {
+                document.getElementById('password-error').classList.remove('hidden');
+                return;
+            }
+            
+            // Проверка силы пароля
+            const hasLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            
+            if (!hasLength || !hasUppercase || !hasNumber || !hasSpecial) {
+                alert('Please make sure your password meets all requirements');
+                return;
+            }
+            
+            // Сохранение данных пользователя (в реальном приложении здесь был бы запрос к серверу)
+            localStorage.setItem('userName', name);
+            localStorage.setItem('userEmail', email);
+            
+            // Показ модального окна успеха
+            showSuccessModal('Account Created', 'Your account has been successfully created', 'profile.html');
+        });
+        
+        // Обработка отправки формы восстановления пароля
+        document.getElementById('forgotPasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('reset-email').value;
+            
+            if (email) {
+                // В реальном приложении здесь был бы запрос к серверу
+                setTimeout(() => {
+                    showSuccessModal('Reset Link Sent', 'We have sent a password reset link to your email address', null);
+                }, 500);
+            }
+        });
+
+        // Переключение между формами
+        document.getElementById('switch-to-register').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelector('[data-tab="register"]').click();
+        });
+        
+        document.getElementById('switch-to-login').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelector('[data-tab="login"]').click();
+        });
+        
+        document.getElementById('forgot-password-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Скрываем все формы
+            document.querySelectorAll('.auth-form').forEach(form => {
+                form.classList.remove('active');
+                form.classList.add('hidden');
+            });
+            
+            // Показываем форму восстановления пароля
+            document.getElementById('forgot-password-form').classList.remove('hidden');
+            document.getElementById('forgot-password-form').classList.add('active');
+        });
+        
+        document.getElementById('back-to-login').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Скрываем все формы
+            document.querySelectorAll('.auth-form').forEach(form => {
+                form.classList.remove('active');
+                form.classList.add('hidden');
+            });
+            
+            // Показываем форму входа
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('login-form').classList.add('active');
+            
+            // Активируем вкладку входа
+            document.querySelectorAll('.auth-tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            document.querySelector('[data-tab="login"]').classList.add('active');
+        });
+
+        // Функция показа модального окна успеха
+        function showSuccessModal(title, message, redirectUrl) {
+            document.getElementById('success-title').textContent = title;
+            document.getElementById('success-message').textContent = message;
+            document.getElementById('success-modal').classList.remove('hidden');
+            
+            // Обработка кнопки модального окна
+            const okBtn = document.getElementById('modal-ok-btn');
+            okBtn.onclick = function() {
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                } else {
+                    document.getElementById('success-modal').classList.add('hidden');
+                }
+            };
+        }
+
+        // Проверка, если пользователь уже авторизован
+        document.addEventListener('DOMContentLoaded', function() {
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                window.location.href = 'profile.html';
+            }
+        });
+    </script>
+</body>
+</html>
