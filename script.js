@@ -524,34 +524,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         events.forEach(event => {
-            L.marker([event.lat, event.lng], { icon: eventIcon })
-                .addTo(map)
-                .bindPopup(`
-                    <img src="logos/event-logo.png" class="popup-logo">
-                    <div class="ml-0">
-                        <b>${event.title}</b><br>
-                        ${event.description}<br>
-                        Participants: ${event.participants}<br>
-                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>
-                    </div>
-                `);
-        });
-
-        // Add circles
-        L.circle([51.1900, 71.4000], {
-            color: 'orange',
-            fillColor: 'yellow',
-            fillOpacity: 0.5,
-            radius: 500
-        }).addTo(map).bindPopup("<b>Industrial Zone</b><br>Area with air quality concerns");
-
-        L.circle([51.1450, 71.4150], {
-            color: 'blue',
-            fillColor: 'cyan',
-            fillOpacity: 0.5,
-            radius: 300
-        }).addTo(map).bindPopup("<b>Improved Zone</b><br>Former polluted area now restored by volunteers");
-    }
+    L.marker([event.lat, event.lng], { icon: eventIcon })
+        .addTo(map)
+        .bindPopup(`
+            <img src="logos/event-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
+            <div class="ml-0">
+                <b>${event.title}</b><br>
+                ${event.description}<br>
+                Participants: ${event.participants}<br>
+                <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>
+            </div>
+        `);
+});
 
     // Challenge button functionality if on knowledge page
     if (document.getElementById('knowledge')) {
