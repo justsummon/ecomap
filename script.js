@@ -1,12 +1,89 @@
 // ===== ОСНОВНЫЕ ФУНКЦИИ КАРТЫ =====
+function createCustomIcon(type, severity = 'medium') {
+    const severityColors = {
+        'low': '#10B981',
+        'medium': '#F59E0B', 
+        'high': '#F97316',
+        'critical': '#EF4444'
+    };
+    
+    const color = severityColors[severity] || '#EF4444';
+    const size = [32, 32];
+    
+    // Новые иконки для 'trash', 'cleanup', 'planting'
+    const icons = {
+        'trash': L.divIcon({
+            html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white shadow-lg border-2 border-white">
+                <i class="fas fa-trash text-sm"></i>
+            </div>`,
+            iconSize: size,
+            className: 'custom-marker'
+        }),
+        'cleanup': L.divIcon({
+            html: `<div style="background-color: #10B981;" class="rounded-full w-8 h-8 flex items-center justify-center text-white shadow-lg border-2 border-white">
+                <i class="fas fa-check text-sm"></i>
+            </div>`,
+            iconSize: size,
+            className: 'custom-marker'
+        }),
+        'planting': L.divIcon({
+            html: `<div style="background-color: #22C55E;" class="rounded-full w-8 h-8 flex items-center justify-center text-white shadow-lg border-2 border-white">
+                <i class="fas fa-seedling text-sm"></i>
+            </div>`,
+            iconSize: size,
+            className: 'custom-marker'
+        }),
+        'event': L.divIcon({
+            html: `<div style="background-color: #8B5CF6;" class="rounded-full w-8 h-8 flex items-center justify-center text-white shadow-lg border-2 border-white">
+                <i class="fas fa-calendar text-sm"></i>
+            </div>`,
+            iconSize: size,
+            className: 'custom-marker'
+        }),
+        'pollution': L.divIcon({
+            html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white shadow-lg border-2 border-white">
+                <i class="fas fa-smog text-sm"></i>
+            </div>`,
+            iconSize: size,
+            className: 'custom-marker'
+        }),
+        'damage': L.divIcon({
+            html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white shadow-lg border-2 border-white">
+                <i class="fas fa-tree text-sm"></i>
+            </div>`,
+            iconSize: size,
+            className: 'custom-marker'
+        })
+    };
+    
+    return icons[type] || icons['trash'];
+}
+
 function initMapWithEcoYardStyle() {
     if (!document.getElementById('map')) return;
 
+    // Убедитесь, что карта имеет правильные размеры
+    const mapContainer = document.getElementById('map');
+    mapContainer.style.height = '500px';
+    mapContainer.style.width = '100%';
+    
     const map = L.map('map').setView([51.1605, 71.4704], 12);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; EcoYard Community'
+        attribution: '&copy; EcoMap Community'
     }).addTo(map);
+
+    // Принудительно обновляем размер карты после загрузки
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 100);
+
+    // Добавляем обработчик для ресайза окна
+    window.addEventListener('resize', function() {
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+    });
 
     // ===== СИСТЕМА ОТЧЕТОВ О ПРОБЛЕМАХ =====
     function initReportSystem() {
@@ -39,6 +116,11 @@ function initMapWithEcoYardStyle() {
                 const marker = L.marker([report.location.lat, report.location.lng], {icon: icon})
                     .addTo(map)
                     .bindPopup(createReportPopup(report, index));
+                    
+                // Добавляем обработчик для слайдеров в отчетах
+                marker.on('popupopen', function() {
+                    initPopupSliders(this.getPopup());
+                });
             }
         });
     }
@@ -139,19 +221,8 @@ function initMapWithEcoYardStyle() {
     // Инициализация системы отчетов
     initReportSystem();
 
-    // ===== СУЩЕСТВУЮЩИЕ МАРКЕРЫ =====
-    const createEcoYardMarker = (color, emoji) => {
-        return L.divIcon({
-            html: `
-                <div style="background-color: ${color};" class="eco-yard-marker rounded-full w-10 h-10 flex items-center justify-center text-white font-bold shadow-lg border-2 border-white">
-                    ${emoji}
-                </div>
-            `,
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
-        });
-    };
+    // ===== СУЩЕСТВУЮЩИЕ МАРКЕРЫ (УДАЛЕНИЕ createEcoYardMarker) =====
+    // УДАЛЕНА: const createEcoYardMarker = (color, emoji) => { ... };
 
     const locations = [
         {
@@ -163,12 +234,12 @@ function initMapWithEcoYardStyle() {
             points: 50
         },
         {
-            coords: [51.1550, 71.4500],
+            coords: [51.1286, 71.4307], // Координаты стадиона им. Мунайтпасова на Кенесары
             type: 'cleanup',
-            title: 'Successful River Restoration',
-            description: 'This area was cleaned by 22 volunteers last month. See the amazing transformation!',
-            beforeImage: 'https://images.unsplash.com/photo-1564053489984-317bbd824340?w=300&h=200&fit=crop',
-            afterImage: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=300&h=200&fit=crop',
+            title: 'Стадион им. Мунайтпасова',
+            description: 'This stadium area was transformed by 22 volunteers last month. See the amazing cleanup results!',
+            beforeImage: 'https://github.com/justsummon/ecomap/blob/main/images/photo_stadium_before.jpg?raw=true',
+            afterImage: 'https://github.com/justsummon/ecomap/blob/main/images/photo_stadium_after.jpg?raw=true',
             points: 75
         },
         {
@@ -182,13 +253,11 @@ function initMapWithEcoYardStyle() {
     ];
 
     locations.forEach(location => {
+        // ИЗМЕНЕНИЕ: Используем createCustomIcon вместо createEcoYardMarker
+        const icon = createCustomIcon(location.type, 'high'); // Используем 'high' для примера
+        
         const marker = L.marker(location.coords, {
-            icon: createEcoYardMarker(
-                location.type === 'trash' ? '#DC143C' : 
-                location.type === 'cleanup' ? '#3CB371' : '#2E8B57',
-                location.type === 'trash' ? '🗑️' : 
-                location.type === 'cleanup' ? '✨' : '🌳'
-            )
+            icon: icon
         }).addTo(map);
 
         let popupContent = `
@@ -217,9 +286,14 @@ function initMapWithEcoYardStyle() {
         `;
 
         marker.bindPopup(createBeautifulPopup(popupContent, location.type));
+
+        // Добавляем обработчик для слайдеров
+        marker.on('popupopen', function() {
+            initPopupSliders(this.getPopup());
+        });
     });
 
-    // Добавление стандартных маркеров
+    // Добавление стандартных маркеров с кастомными иконками
     addStandardMarkers(map);
     
     // Инициализация слайдеров
@@ -332,8 +406,39 @@ function createBeautifulPopup(content, type) {
     `;
 }
 
+// ===== ФУНКЦИЯ ДЛЯ ИНИЦИАЛИЗАЦИИ СЛАЙДЕРОВ В ПОПАПАХ =====
+function initPopupSliders(popup) {
+    // Ждем пока попап полностью откроется
+    setTimeout(() => {
+        const sliders = popup.getElement().querySelectorAll('.slider');
+        sliders.forEach(slider => {
+            // Устанавливаем начальное значение
+            const afterImage = slider.parentElement.querySelector('.after-image');
+            if (afterImage) {
+                afterImage.style.clipPath = `inset(0 0 0 ${slider.value}%)`;
+            }
+            
+            // Добавляем обработчик события
+            slider.addEventListener('input', function() {
+                const container = this.parentElement;
+                const afterImage = container.querySelector('.after-image');
+                if (afterImage) {
+                    afterImage.style.clipPath = `inset(0 0 0 ${this.value}%)`;
+                }
+            });
+        });
+    }, 100);
+}
+
 function initSliders() {
     document.querySelectorAll('.slider').forEach(slider => {
+        // Устанавливаем начальное значение
+        const afterImage = slider.parentElement.querySelector('.after-image');
+        if (afterImage) {
+            afterImage.style.clipPath = `inset(0 0 0 ${slider.value}%)`;
+        }
+        
+        // Добавляем обработчик события
         slider.addEventListener('input', function() {
             const container = this.parentElement;
             const afterImage = container.querySelector('.after-image');
@@ -361,51 +466,14 @@ window.handleLocationAction = function(locationType, points, description) {
     alert(`+${points} points for: ${description}`);
 };
 
-// ===== СТАНДАРТНЫЕ МАРКЕРЫ =====
+// ===== СТАНДАРТНЫЕ МАРКЕРЫ С КАСТОМНЫМИ ИКОНКАМИ =====
 function addStandardMarkers(map) {
-    // Создание кастомных иконок
-    const trashIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
-
-    const cleanedIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
-
-    const plantingIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
-
-    const eventIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
-
     // Данные маркеров
     const trashSpots = [
-        { lat: 51.1475, lng: 71.4225, title: "Park Trash Accumulation", description: "Plastic bottles and food wrappers", severity: "Medium" },
-        { lat: 51.1520, lng: 71.4380, title: "Alleyway Dumping", description: "Furniture and household waste", severity: "High" },
-        { lat: 51.1650, lng: 71.4450, title: "Riverbank Pollution", description: "Plastic bags and containers", severity: "High" },
-        { lat: 51.1800, lng: 71.4300, title: "Street Litter", description: "Cigarette butts and small trash", severity: "Low" }
+        { lat: 51.1475, lng: 71.4225, title: "Park Trash Accumulation", description: "Plastic bottles and food wrappers", severity: "medium" },
+        { lat: 51.1520, lng: 71.4380, title: "Alleyway Dumping", description: "Furniture and household waste", severity: "high" },
+        { lat: 51.1650, lng: 71.4450, title: "Riverbank Pollution", description: "Plastic bags and containers", severity: "high" },
+        { lat: 51.1800, lng: 71.4300, title: "Street Litter", description: "Cigarette butts and small trash", severity: "low" }
     ];
 
     const cleanedAreas = [
@@ -423,9 +491,11 @@ function addStandardMarkers(map) {
         { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
     ];
 
-    // Добавление маркеров
+    // Добавление маркеров с кастомными иконками
     trashSpots.forEach(spot => {
-        L.marker([spot.lat, spot.lng], { icon: trashIcon })
+        L.marker([spot.lat, spot.lng], { 
+            icon: createCustomIcon('trash', spot.severity.toLowerCase())
+        })
             .addTo(map)
             .bindPopup(`
                 <div class="p-2">
@@ -437,36 +507,24 @@ function addStandardMarkers(map) {
     });
 
     cleanedAreas.forEach(area => {
-        let beforePhoto = "https://via.placeholder.com/250x150/ff0000/ffffff?text=Before";
-        let afterPhoto = "https://via.placeholder.com/250x150/00ff00/ffffff?text=After";
-
-        L.marker([area.lat, area.lng], { icon: cleanedIcon })
+        L.marker([area.lat, area.lng], { 
+            icon: createCustomIcon('cleanup')
+        })
             .addTo(map)
             .bindPopup(`
                 <div class="p-2">
                     <b>${area.title}</b><br>
                     ${area.description}<br>
                     Volunteers: ${area.volunteers}<br>
-                    <span class="text-green-600">Area Cleaned</span><br>
-                    
-                    <div class="before-after-container">
-                        <div class="before-image">
-                            <img src="${beforePhoto}" alt="Before cleanup"/>
-                        </div>
-                        <div class="after-image">
-                            <img src="${afterPhoto}" alt="After cleanup"/>
-                        </div>
-                        <input type="range" min="0" max="100" value="50" class="slider" />
-                    </div>
-                    <div class="mt-2 text-xs text-gray-500">
-                        Drag slider to see before/after comparison
-                    </div>
+                    <span class="text-green-600">Area Cleaned</span>
                 </div>
             `);
     });
 
     plantingZones.forEach(zone => {
-        L.marker([zone.lat, zone.lng], { icon: plantingIcon })
+        L.marker([zone.lat, zone.lng], { 
+            icon: createCustomIcon('planting')
+        })
             .addTo(map)
             .bindPopup(`
                 <div class="p-2">
@@ -479,7 +537,9 @@ function addStandardMarkers(map) {
     });
 
     events.forEach(event => {
-        L.marker([event.lat, event.lng], { icon: eventIcon })
+        L.marker([event.lat, event.lng], { 
+            icon: createCustomIcon('event')
+        })
             .addTo(map)
             .bindPopup(`
                 <div class="p-2">
@@ -572,4 +632,23 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = 'login.html';
         }
     }
+});
+
+// ===== ОБРАБОТКА ОШИБОК КАРТЫ =====
+function handleMapErrors() {
+    const mapElement = document.getElementById('map');
+    if (mapElement) {
+        // Проверяем, загрузилась ли карта
+        setTimeout(() => {
+            if (mapElement.querySelector('.leaflet-container') === null) {
+                console.error('Карта не загрузилась');
+                // Можно показать сообщение об ошибке
+            }
+        }, 2000);
+    }
+}
+
+// Вызовите эту функцию после инициализации карты
+document.addEventListener('DOMContentLoaded', function() {
+    handleMapErrors();
 });

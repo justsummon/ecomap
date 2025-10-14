@@ -11,6 +11,7 @@
     <!-- Leaflet Routing Machine -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <link rel="stylesheet" href="styles.css">
     <style>
         .before-after-container {
             position: relative;
@@ -158,8 +159,48 @@
         </div>
     </header>
 
+    <!-- Модальное окно для входа -->
+    <div id="loginModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="modal-content bg-white rounded-lg p-6 w-96 mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-green-800">Sign In</h3>
+                <button class="close text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+            </div>
+            
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <input type="email" placeholder="Email" class="w-full p-3 border border-green-300 rounded" required>
+                </div>
+                <div>
+                    <input type="password" placeholder="Password" class="w-full p-3 border border-green-300 rounded" required>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700 transition">
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="my-4 text-center text-sm text-gray-600">Or continue with</div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <button class="bg-white border border-gray-300 py-2 rounded flex items-center justify-center hover:bg-gray-50" onclick="signInWithGoogle()">
+                    <i class="fab fa-google text-red-500 mr-2"></i>
+                    Google
+                </button>
+                <button class="bg-white border border-gray-300 py-2 rounded flex items-center justify-center hover:bg-gray-50" onclick="signInWithFacebook()">
+                    <i class="fab fa-facebook text-blue-600 mr-2"></i>
+                    Facebook
+                </button>
+            </div>
+            
+            <p class="text-center text-sm text-gray-600">
+                Don't have an account? 
+                <a href="profile.html" class="text-green-600 hover:underline">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
     <!-- Fullscreen Map Section -->
-    <section id="map-section" class="pt-32 h-screen">
+    <section id="map-section" class="pt-20 h-screen">
         <div id="fullscreen-map" class="h-full w-full"></div>
         
         <!-- Navigation Controls -->
@@ -193,7 +234,6 @@
 
             <div id="route-distance" data-translate="distance">Distance: -</div>
             <div id="route-time" data-translate="time">Time: -</div>
-            <!-- Убрал блок с инструкциями маршрута -->
         </div>
         
         <!-- Map Controls Overlay -->
@@ -225,12 +265,14 @@
             <hr class="my-4 border-green-200">
             
             <h3 class="text-lg font-semibold mb-3 text-green-800" data-translate="report-an-issue">Report an Issue</h3>
-            <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
+            <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition" onclick="window.location.href='report-issue.html'">
                 <i class="fas fa-plus-circle mr-2"></i> <span data-translate="report-issue">Report Issue</span>
             </button>
         </div>
     </section>
 
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
     <script>
         // Translation dictionary
         const translations = {
@@ -247,12 +289,10 @@
                 "your-location": "Your location",
                 "destination": "Destination",
                 
-
                 // Transport modes
                 "car": "Car",
                 "walk": "Walk",
                 
-
                 // Map Filters
                 "map-filters": "Map Filters",
                 "trash-spots": "Trash Spots",
@@ -310,12 +350,10 @@
                 "your-location": "Ваше местоположение",
                 "destination": "Место назначения",
                 
-
                 // Transport modes
                 "car": "Машина",
                 "walk": "Пешком",
                 
-
                 // Map Filters
                 "map-filters": "Фильтры карта",
                 "trash-spots": "Мусорные точки",
@@ -373,12 +411,10 @@
                 "your-location": "Сіздің орналасқан жеріңіз",
                 "destination": "Баратын жер",
                 
-
                 // Transport modes
                 "car": "Көлік",
                 "walk": "Жәңгіма",
                 
-
                 // Map Filters
                 "map-filters": "Карта сүзгілері",
                 "trash-spots": "Қоқыс нүктелері",
@@ -519,42 +555,6 @@
             let currentTravelMode = 'car';
 
             // Create custom icons
-            const trashIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
-
-            const cleanedIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
-
-            const plantingIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
-
-            const eventIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
-
             const userIcon = L.icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-gold.png',
                 shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -572,29 +572,6 @@
                 popupAnchor: [1, -34],
                 shadowSize: [41, 41]
             });
-
-            // Add markers data
-            const trashSpots = [
-                { lat: 51.1475, lng: 71.4225, title: "Park Trash Accumulation", description: "Plastic bottles and food wrappers", severity: "Medium" },
-                { lat: 51.1520, lng: 71.4380, title: "Alleyway Dumping", description: "Furniture and household waste", severity: "High" },
-                { lat: 51.1650, lng: 71.4450, title: "Riverbank Pollution", description: "Plastic bags and containers", severity: "High" },
-                { lat: 51.1800, lng: 71.4300, title: "Street Litter", description: "Cigarette butts and small trash", severity: "Low" }
-            ];
-
-            const cleanedAreas = [
-                { lat: 51.1400, lng: 71.4100, title: "Central Park Cleanup", description: "Completed June 5, 2025", volunteers: 15 },
-                { lat: 51.1550, lng: 71.4500, title: "Esil River Cleanup", description: "Completed May 28, 2025", volunteers: 22 }
-            ];
-
-            const plantingZones = [
-                { lat: 51.1700, lng: 71.4250, title: "Future Tree Planting", description: "50 native trees planned", date: "June 22, 2025" },
-                { lat: 51.1600, lng: 71.4400, title: "Community Garden", description: "Vegetables and flowers", date: "Ongoing" }
-            ];
-
-            const events = [
-                { lat: 51.1500, lng: 71.4350, title: "Park Cleanup Event", description: "June 15, 9AM-12PM", participants: 23 },
-                { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
-            ];
 
             // Function to get translated text
             function t(key) {
@@ -627,8 +604,17 @@
             }
             
             // Add markers to map with before/after sliders for trash spots
+            const trashSpots = [
+                { lat: 51.1475, lng: 71.4225, title: "Park Trash Accumulation", description: "Plastic bottles and food wrappers", severity: "Medium" },
+                { lat: 51.1520, lng: 71.4380, title: "Alleyway Dumping", description: "Furniture and household waste", severity: "High" },
+                { lat: 51.1650, lng: 71.4450, title: "Riverbank Pollution", description: "Plastic bags and containers", severity: "High" },
+                { lat: 51.1800, lng: 71.4300, title: "Street Litter", description: "Cigarette butts and small trash", severity: "Low" }
+            ];
+
             trashSpots.forEach(spot => {
-                const marker = L.marker([spot.lat, spot.lng], { icon: trashIcon })
+                const marker = L.marker([spot.lat, spot.lng], { 
+                    icon: createCustomIcon('trash', spot.severity.toLowerCase())
+                })
                     .addTo(map)
                     .bindPopup(`
                         <b>${spot.title}</b><br>
@@ -663,8 +649,15 @@
             });
 
             // Add other markers (cleaned areas, planting zones, events)
+            const cleanedAreas = [
+                { lat: 51.1400, lng: 71.4100, title: "Central Park Cleanup", description: "Completed June 5, 2025", volunteers: 15 },
+                { lat: 51.1550, lng: 71.4500, title: "Esil River Cleanup", description: "Completed May 28, 2025", volunteers: 22 }
+            ];
+
             cleanedAreas.forEach(area => {
-                const marker = L.marker([area.lat, area.lng], { icon: cleanedIcon })
+                const marker = L.marker([area.lat, area.lng], { 
+                    icon: createCustomIcon('cleanup')
+                })
                     .addTo(map)
                     .bindPopup(`
                         <b>${area.title}</b><br>
@@ -686,8 +679,15 @@
                 });
             });
 
+            const plantingZones = [
+                { lat: 51.1700, lng: 71.4250, title: "Future Tree Planting", description: "50 native trees planned", date: "June 22, 2025" },
+                { lat: 51.1600, lng: 71.4400, title: "Community Garden", description: "Vegetables and flowers", date: "Ongoing" }
+            ];
+
             plantingZones.forEach(zone => {
-                const marker = L.marker([zone.lat, zone.lng], { icon: plantingIcon })
+                const marker = L.marker([zone.lat, zone.lng], { 
+                    icon: createCustomIcon('planting')
+                })
                     .addTo(map)
                     .bindPopup(`
                         <b>${zone.title}</b><br>
@@ -709,8 +709,15 @@
                 });
             });
 
+            const events = [
+                { lat: 51.1500, lng: 71.4350, title: "Park Cleanup Event", description: "June 15, 9AM-12PM", participants: 23 },
+                { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
+            ];
+
             events.forEach(event => {
-                const marker = L.marker([event.lat, event.lng], { icon: eventIcon })
+                const marker = L.marker([event.lat, event.lng], { 
+                    icon: createCustomIcon('event')
+                })
                     .addTo(map)
                     .bindPopup(`
                         <b>${event.title}</b><br>
@@ -813,8 +820,6 @@
                         `${t('distance').replace(': -', '')}: ${distanceKm} km`;
                     
                     updateRouteTimeDisplay(distanceKm, currentTravelMode);
-                    
-                    // Убрал отображение инструкций маршрута
                 });
             }
 
@@ -968,6 +973,18 @@
                 const navMenu = document.getElementById('nav-menu');
                 navMenu.classList.toggle('hidden');
                 navMenu.classList.toggle('flex');
+            });
+
+            // Принудительно обновляем размер карты после загрузки
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+
+            // Добавляем обработчик для ресайза окна
+            window.addEventListener('resize', function() {
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
             });
         });
     </script>
