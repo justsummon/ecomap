@@ -1,620 +1,575 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    
-    // Если не на странице профиля и не на главной, проверяем авторизацию
-    if (!window.location.pathname.includes('profile.html') && 
-        !window.location.pathname.includes('index.html') &&
-        !window.location.pathname.endsWith('/') &&
-        window.location.pathname !== '') {
-        if (!isLoggedIn) {
-            window.location.href = 'profile.html';
-        }
+// ===== ОСНОВНЫЕ ФУНКЦИИ КАРТЫ =====
+function initMapWithEcoYardStyle() {
+    if (!document.getElementById('map')) return;
+
+    const map = L.map('map').setView([51.1605, 71.4704], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; EcoYard Community'
+    }).addTo(map);
+
+    // ===== СИСТЕМА ОТЧЕТОВ О ПРОБЛЕМАХ =====
+    function initReportSystem() {
+        // Кнопка для сообщения о проблеме
+        const reportButton = L.control({position: 'topright'});
+        reportButton.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'report-button-container');
+            div.innerHTML = `
+                <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition duration-200 flex items-center"
+                        onclick="window.location.href='report-issue.html'">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Report Issue
+                </button>
+            `;
+            return div;
+        };
+        reportButton.addTo(map);
+
+        // Загрузка и отображение существующих отчетов
+        loadAndDisplayReports(map);
     }
-});
 
-document.addEventListener('DOMContentLoaded', function () {
-    // ===== LANGUAGE FUNCTIONALITY =====
-    const languageToggle = document.getElementById('language-toggle');
-    const languageDropdown = document.getElementById('language-dropdown');
-    const currentLanguageElement = document.getElementById('current-language');
-    
-    // Language translations
-    const translations = {
-        en: {
-            // Header
-            'home': 'Home',
-            'rewards': 'Rewards',
-            'knowledge': 'Eco-Knowledge',
-            'community': 'Community',
-            'signin': 'Sign In',
-            'myprofile': 'My Profile',
-            
-            // Hero section
-            'join-revolution': 'Join the Green Revolution',
-            'hero-text': 'Track environmental issues, participate in cleanups, earn rewards, and make your community cleaner and greener!',
-            'explore-map': 'Explore Map',
-            'report-issue': 'Report Issue',
-            
-            // Map section
-            'interactive-map': 'Interactive Eco Map',
-            'map-filters': 'Map Filters',
-            'trash-spots': 'Trash Spots',
-            'cleaned-areas': 'Cleaned Areas',
-            'planting-zones': 'Planting Zones',
-            'polluted-zones': 'Polluted Zones',
-            'upcoming-events': 'Upcoming Events',
-            'report-an-issue': 'Report an Issue',
-            'select-issue-type': 'Select issue type',
-            'trash-accumulation': 'Trash accumulation',
-            'illegal-dumping': 'Illegal dumping',
-            'polluted-water': 'Polluted water',
-            'other': 'Other',
-            'add-description': 'Add description...',
-            'submit-report': 'Submit Report',
-            
-            // Footer
-            'footer-tagline': 'Connecting communities for a cleaner, greener planet.',
-            'quick-links': 'Quick Links',
-            'about-us': 'About Us',
-            'how-it-works': 'How It Works',
-            'success-stories': 'Success Stories',
-            'get-involved': 'Get Involved',
-            'resources': 'Resources',
-            'eco-tips': 'Eco Tips',
-            'recycling-guide': 'Recycling Guide',
-            'volunteer-handbook': 'Volunteer Handbook',
-            'partner-with-us': 'Partner With Us',
-            'connect': 'Connect',
-            'subscribe-newsletter': 'Subscribe to our newsletter',
-            'your-email': 'Your email',
-            'privacy-policy': 'Privacy Policy',
-            'terms-of-service': 'Terms of Service',
+    // Загрузка и отображение отчетов
+    function loadAndDisplayReports(map) {
+        const reports = JSON.parse(localStorage.getItem('ecoMapReports') || '[]');
+        
+        reports.forEach((report, index) => {
+            if (report.location && report.status !== 'resolved') {
+                const icon = getReportIcon(report.type, report.severity);
+                const marker = L.marker([report.location.lat, report.location.lng], {icon: icon})
+                    .addTo(map)
+                    .bindPopup(createReportPopup(report, index));
+            }
+        });
+    }
 
-            // Knowledge page
-            'knowledge-hub': 'Eco Knowledge Hub',
-            'todays-challenge': 'Today\'s Eco Challenge',
-            'energy-saving': 'Energy Saving',
-            'water-conservation': 'Water Conservation',
-            'recycling-facts': 'Recycling Facts',
-            'learn-more': 'Learn more →',
-            'quick-eco-lessons': 'Quick Eco Lessons',
-            'test-knowledge': 'Test Your Eco Knowledge',
-            'mark-complete': 'Mark as Complete',
-            'submit-answer': 'Submit Answer',
+    // Получение иконки для типа отчета
+    function getReportIcon(type, severity) {
+        const size = [30, 30];
+        const severityColors = {
+            'low': '#10B981',
+            'medium': '#F59E0B', 
+            'high': '#F97316',
+            'critical': '#EF4444'
+        };
+        
+        const color = severityColors[severity] || '#EF4444';
+        
+        const icons = {
+            'trash': L.divIcon({
+                html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
+                    <i class="fas fa-trash"></i>
+                </div>`,
+                iconSize: size,
+                className: 'report-marker'
+            }),
+            'pollution': L.divIcon({
+                html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
+                    <i class="fas fa-smog"></i>
+                </div>`,
+                iconSize: size,
+                className: 'report-marker'
+            }),
+            'damage': L.divIcon({
+                html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
+                    <i class="fas fa-tree"></i>
+                </div>`,
+                iconSize: size,
+                className: 'report-marker'
+            }),
+            'other': L.divIcon({
+                html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>`,
+                iconSize: size,
+                className: 'report-marker'
+            })
+        };
+        
+        return icons[type] || icons['other'];
+    }
 
-            // Community page
-            'community-title': 'Eco Community',
-            'eco-heroes': 'This Month\'s Eco Heroes',
-            'top-contributor': 'Top Contributor',
-            'eco-educator': 'Eco Educator',
-            'waste-warrior': 'Waste Warrior',
-            'rsvp': 'RSVP',
-            'attending': 'attending',
-            'our-partners': 'Our Partners',
+    // Создание попапа для отчета
+    function createReportPopup(report, index) {
+        const statusBadge = report.status === 'verified' ? 
+            '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Verified</span>' :
+            '<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Pending</span>';
+        
+        const severityColors = {
+            'low': 'green-500',
+            'medium': 'yellow-500',
+            'high': 'orange-500',
+            'critical': 'red-500'
+        };
+        
+        const colorClass = severityColors[report.severity] || 'red-500';
+        
+        return `
+            <div class="report-popup p-3 max-w-xs">
+                <div class="flex justify-between items-start mb-2">
+                    <h4 class="font-bold text-gray-800">${report.title}</h4>
+                    ${statusBadge}
+                </div>
+                
+                <div class="flex items-center mb-2">
+                    <span class="inline-block w-3 h-3 rounded-full bg-${colorClass} mr-2"></span>
+                    <span class="text-sm text-gray-600 capitalize">${report.severity} severity</span>
+                </div>
+                
+                <p class="text-sm text-gray-600 mb-3">${report.description}</p>
+                
+                <div class="text-xs text-gray-500 mb-3">
+                    Reported: ${new Date(report.timestamp).toLocaleDateString()}
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-green-600 text-white py-1 px-2 rounded text-sm hover:bg-green-700 transition"
+                            onclick="verifyReport(${index})">
+                        <i class="fas fa-check mr-1"></i> Verify
+                    </button>
+                    <button class="flex-1 bg-blue-600 text-white py-1 px-2 rounded text-sm hover:bg-blue-700 transition"
+                            onclick="resolveReport(${index})">
+                        <i class="fas fa-flag mr-1"></i> Resolve
+                    </button>
+                </div>
+            </div>
+        `;
+    }
 
-            // Rewards page
-            'rewards-title': 'Earn Rewards for Green Actions',
-            'cleanup-participation': 'Cleanup Participation',
-            'tree-planting': 'Tree Planting',
-            'eco-challenges': 'Eco Challenges',
-            'your-progress': 'Your Progress',
-            'redeem-points': 'Redeem Points with Our Partners',
-            'points-to-next': 'points to next reward',
-            'unlock-reward': 'Earn 500 points to unlock your first reward!'
-        },
-        ru: {
-            // Header
-            'home': 'Главная',
-            'rewards': 'Награды',
-            'knowledge': 'Эко-Знания',
-            'community': 'Сообщество',
-            'signin': 'Войти',
-            'myprofile': 'Мой профиль',
-            
-            // Hero section
-            'join-revolution': 'Присоединяйтесь к Зеленой Революции',
-            'hero-text': 'Отслеживайте экологические проблемы, участвуйте в уборках, зарабатывайте награды и делайте свое сообщество чище и зеленее!',
-            'explore-map': 'Исследовать карту',
-            'report-issue': 'Сообщить о проблеме',
-            
-            // Map section
-            'interactive-map': 'Интерактивная Эко Карта',
-            'map-filters': 'Фильтры карта',
-            'trash-spots': 'Мусорные точки',
-            'cleaned-areas': 'Очищенные зоны',
-            'planting-zones': 'Зоны посадки',
-            'polluted-zones': 'Загрязненные зоны',
-            'upcoming-events': 'Предстоящие события',
-            'report-an-issue': 'Сообщить о проблеме',
-            'select-issue-type': 'Выберите тип проблемы',
-            'trash-accumulation': 'Скопление мусора',
-            'illegal-dumping': 'Незаконный сброс',
-            'polluted-water': 'Загрязненная вода',
-            'other': 'Другое',
-            'add-description': 'Добавить описание...',
-            'submit-report': 'Отправить отчет',
-            
-            // Footer
-            'footer-tagline': 'Объединяем сообщества для более чистого и зеленого мира.',
-            'quick-links': 'Быстрые ссылки',
-            'about-us': 'О нас',
-            'how-it-works': 'Как это работает',
-            'success-stories': 'Истории успеха',
-            'get-involved': 'Принять участие',
-            'resources': 'Ресурсы',
-            'eco-tips': 'Эко-советы',
-            'recycling-guide': 'Руководство по переработке',
-            'volunteer-handbook': 'Руководство волонтера',
-            'partner-with-us': 'Стать партнером',
-            'connect': 'Связь',
-            'subscribe-newsletter': 'Подпишитесь на рассылку',
-            'your-email': 'Ваш email',
-            'privacy-policy': 'Политика конфиденциальности',
-            'terms-of-service': 'Условия использования',
+    // Инициализация системы отчетов
+    initReportSystem();
 
-            // Knowledge page
-            'knowledge-hub': 'Центр Эко Знаний',
-            'todays-challenge': 'Сегодняшний Эко Вызов',
-            'energy-saving': 'Экономия энергии',
-            'water-conservation': 'Сохранение воды',
-            'recycling-facts': 'Факты о переработке',
-            'learn-more': 'Узнать больше →',
-            'quick-eco-lessons': 'Быстрые уроки экологии',
-            'test-knowledge': 'Проверьте свои экознания',
-            'mark-complete': 'Отметить как выполненное',
-            'submit-answer': 'Отправить ответ',
-
-            // Community page
-            'community-title': 'Эко Сообщество',
-            'eco-heroes': 'Эко Герои месяца',
-            'top-contributor': 'Лучший участник',
-            'eco-educator': 'Эко педагог',
-            'waste-warrior': 'Борец с отходами',
-            'rsvp': 'Подтвердить участие',
-            'attending': 'участников',
-            'our-partners': 'Наши партнеры',
-
-            // Rewards page
-            'rewards-title': 'Зарабатывайте награды за экодействия',
-            'cleanup-participation': 'Участие в уборках',
-            'tree-planting': 'Посадка деревьев',
-            'eco-challenges': 'Эко испытания',
-            'your-progress': 'Ваш прогресс',
-            'redeem-points': 'Обменивайте баллы у партнеров',
-            'points-to-next': 'баллов до следующей награды',
-            'unlock-reward': 'Заработайте 500 баллов чтобы открыть первую награду!'
-        },
-        kz: {
-            // Header
-            'home': 'Басты',
-            'rewards': 'Марапаттар',
-            'knowledge': 'Эко-Білім',
-            'community': 'Қоғамдастық',
-            'signin': 'Кіру',
-            'myprofile': 'Менің профилім',
-            
-            // Hero section
-            'join-revolution': 'Жасыл Төңкеріске Қосылыңыз',
-            'hero-text': 'Экологиялық мәселелерді бақылаңыз, тазалау жұмыстарына қатысыңыз, сыйлықтар жинаңыз және қоғамдастығыңызды тазартыңыз және жасылдандырыңыз!',
-            'explore-map': 'Картаны зерттеу',
-            'report-issue': 'Мәселе туралы хабарлау',
-            
-            // Map section
-            'interactive-map': 'Интерактивті Эко Карта',
-            'map-filters': 'Карта сүзгілері',
-            'trash-spots': 'Қоқыс нүктелері',
-            'cleaned-areas': 'Тазартылған аймақтар',
-            'planting-zones': 'Отырғызу аймақтары',
-            'polluted-zones': 'Ласанды аймақтар',
-            'upcoming-events': 'Алдағы оқиғалар',
-            'report-an-issue': 'Мәселе туралы хабарлау',
-            'select-issue-type': 'Мәселе түрін таңдаңыз',
-            'trash-accumulation': 'Қоқыс жиналуы',
-            'illegal-dumping': 'Заңсыз құю',
-            'polluted-water': 'Ласанды су',
-            'other': 'Басқа',
-            'add-description': 'Сипаттама қосу...',
-            'submit-report': 'Есепті жіберу',
-            
-            // Footer
-            'footer-tagline': 'Тазар әрі жасыл әлем үшін қоғамдастықтарды біріктіреміз.',
-            'quick-links': 'Жыллам сілтемелер',
-            'about-us': 'Біз туралы',
-            'how-it-works': 'Қалай жұмыс істейді',
-            'success-stories': 'Табыс жағдайлары',
-            'get-involved': 'Қатысу',
-            'resources': 'Ресурстар',
-            'eco-tips': 'Эко-кеңестер',
-            'recycling-guide': 'Қайта өңдеу бойынша нұсқаулық',
-            'volunteer-handbook': 'Еріктілер нұсқаулығы',
-            'partner-with-us': 'Серіктес болу',
-            'connect': 'Байланыс',
-            'subscribe-newsletter': 'Жаңалықтарға жазылыңыз',
-            'your-email': 'Сіздің email',
-            'privacy-policy': 'Құпиялылық саясаты',
-            'terms-of-service': 'Қызмет көрсету шарттары',
-
-            // Knowledge page
-            'knowledge-hub': 'Эко Білім Орталығы',
-            'todays-challenge': 'Бүгінгі Эко Қиындық',
-            'energy-saving': 'Энергия үнемдеу',
-            'water-conservation': 'Су үнемдеу',
-            'recycling-facts': 'Қайта өңдеу туралы фактілер',
-            'learn-more': 'Көбірек білу →',
-            'quick-eco-lessons': 'Жыллам эко сабақтар',
-            'test-knowledge': 'Эко біліміңізді тексеріңіз',
-            'mark-complete': 'Аяқталған деп белгілеу',
-            'submit-answer': 'Жауапты жіберу',
-
-            // Community page
-            'community-title': 'Эко Қоғамдастық',
-            'eco-heroes': 'Айдың Эко Батырлары',
-            'top-contributor': 'Жетекші үлес қосушы',
-            'eco-educator': 'Эко білімберуші',
-            'waste-warrior': 'Қоқыспен күрескер',
-            'rsvp': 'Қатысуын растау',
-            'attending': 'қатысушы',
-            'our-partners': 'Біздің серіктестер',
-
-            // Rewards page
-            'rewards-title': 'Жасыл әрекеттер үшін сыйлықтар жинаңыз',
-            'cleanup-participation': 'Тазалауға қатысу',
-            'tree-planting': 'Ағаш отырғызу',
-            'eco-challenges': 'Эко сынақтар',
-            'your-progress': 'Сіздің прогрессіңіз',
-            'redeem-points': 'Серіктестерімізден ұпайларды айырбастаңыз',
-            'points-to-next': 'келесі сыйлыққа дейін ұпай',
-            'unlock-reward': 'Алғашқы сыйлықты ашу үшін 500 ұпай жинаңыз!'
-        }
+    // ===== СУЩЕСТВУЮЩИЕ МАРКЕРЫ =====
+    const createEcoYardMarker = (color, emoji) => {
+        return L.divIcon({
+            html: `
+                <div style="background-color: ${color};" class="eco-yard-marker rounded-full w-10 h-10 flex items-center justify-center text-white font-bold shadow-lg border-2 border-white">
+                    ${emoji}
+                </div>
+            `,
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -40]
+        });
     };
 
-    function changeLanguage(lang) {
-        // Update all elements with data-translate attribute
-        document.querySelectorAll('[data-translate]').forEach(element => {
-            const key = element.getAttribute('data-translate');
-            if (translations[lang] && translations[lang][key]) {
-                element.textContent = translations[lang][key];
-            }
-        });
-        
-        // Update placeholder texts
-        document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
-            const key = element.getAttribute('data-translate-placeholder');
-            if (translations[lang] && translations[lang][key]) {
-                element.setAttribute('placeholder', translations[lang][key]);
-            }
-        });
-        
-        // Update button texts
-        const loginBtn = document.getElementById('login-btn');
-        if (loginBtn) {
-            if (loginBtn.textContent.includes('Sign In') || loginBtn.textContent.includes('Войти') || loginBtn.textContent.includes('Кіру')) {
-                loginBtn.textContent = translations[lang]['signin'];
-            } else if (loginBtn.textContent.includes('My Profile') || loginBtn.textContent.includes('Мой профиль') || loginBtn.textContent.includes('Менің профилім')) {
-                loginBtn.textContent = translations[lang]['myprofile'];
-            }
+    const locations = [
+        {
+            coords: [51.1475, 71.4225],
+            type: 'trash',
+            title: 'Park Cleanup Opportunity',
+            description: 'Help clean this beautiful park from plastic waste. Every bottle collected makes a difference!',
+            image: 'https://images.unsplash.com/photo-1571624436279-b272aff752b5?w=300&h=200&fit=crop',
+            points: 50
+        },
+        {
+            coords: [51.1550, 71.4500],
+            type: 'cleanup',
+            title: 'Successful River Restoration',
+            description: 'This area was cleaned by 22 volunteers last month. See the amazing transformation!',
+            beforeImage: 'https://images.unsplash.com/photo-1564053489984-317bbd824340?w=300&h=200&fit=crop',
+            afterImage: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=300&h=200&fit=crop',
+            points: 75
+        },
+        {
+            coords: [51.1700, 71.4250],
+            type: 'planting',
+            title: 'Tree Planting Zone',
+            description: 'Perfect spot for oak trees. Join us this weekend to plant the future!',
+            image: 'https://images.unsplash.com/photo-1574263867128-39eaed201e1c?w=300&h=200&fit=crop',
+            points: 100
         }
-        
-        // Save language preference
-        localStorage.setItem('ecoLanguage', lang);
-        
-        // Update current language indicator
-        if (currentLanguageElement) {
-            currentLanguageElement.textContent = lang.toUpperCase();
-        }
-    }
+    ];
 
-    // Initialize language functionality
-    if (languageToggle && languageDropdown) {
-        languageToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            languageDropdown.classList.toggle('hidden');
-        });
-
-        document.querySelectorAll('#language-dropdown button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const lang = button.getAttribute('data-lang');
-                changeLanguage(lang);
-                languageDropdown.classList.add('hidden');
-            });
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (languageDropdown && !languageDropdown.contains(e.target) && languageToggle && !languageToggle.contains(e.target)) {
-                languageDropdown.classList.add('hidden');
-            }
-        });
-    }
-
-    // Load saved language preference
-    const savedLanguage = localStorage.getItem('ecoLanguage') || 'en';
-    if (currentLanguageElement) {
-        currentLanguageElement.textContent = savedLanguage.toUpperCase();
-    }
-    changeLanguage(savedLanguage);
-
-    // ===== EXISTING FUNCTIONALITY =====
-    // Mobile menu toggle
-    const menuToggle = document.getElementById('menu-toggle');
-    const navMenu = document.getElementById('nav-menu');
-
-    if (menuToggle && navMenu) {
-        menuToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('hidden');
-        });
-    }
-
-    // Back to top button
-    const backToTop = document.getElementById('back-to-top');
-    if (backToTop) {
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                backToTop.classList.remove('hidden');
-            } else {
-                backToTop.classList.add('hidden');
-            }
-        });
-
-        backToTop.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
-
-    // Check for saved user data
-    const userPointsElement = document.querySelector('#user-points span');
-    if (userPointsElement) {
-        const userPoints = localStorage.getItem('ecoUserPoints') || 0;
-        userPointsElement.textContent = userPoints;
-    }
-
-    // Update progress bar if on rewards page
-    const progressBar = document.getElementById('progress-bar');
-    if (progressBar) {
-        const userPoints = parseInt(localStorage.getItem('ecoUserPoints') || 0);
-        const progressPercentage = Math.min((userPoints / 500) * 100, 100);
-        progressBar.style.width = `${progressPercentage}%`;
-    }
-
-    // Login button functionality
-    const loginBtn = document.getElementById('login-btn');
-    if (loginBtn) {
-        loginBtn.addEventListener('click', function () {
-            const newPoints = 100; // Starting bonus
-            localStorage.setItem('ecoUserPoints', newPoints);
-            
-            if (userPointsElement) {
-                userPointsElement.textContent = newPoints;
-            }
-            
-            // Get current language for translation
-            const currentLang = localStorage.getItem('ecoLanguage') || 'en';
-            this.textContent = translations[currentLang]['myprofile'] || 'My Profile';
-
-            if (progressBar) {
-                const newProgress = Math.min((newPoints / 500) * 100, 100);
-                progressBar.style.width = `${newProgress}%`;
-            }
-        });
-    }
-
-    // Map initialization if on index page
-    if (document.getElementById('map')) {
-        const map = L.map('map').setView([51.1605, 71.4704], 12);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    locations.forEach(location => {
+        const marker = L.marker(location.coords, {
+            icon: createEcoYardMarker(
+                location.type === 'trash' ? '#DC143C' : 
+                location.type === 'cleanup' ? '#3CB371' : '#2E8B57',
+                location.type === 'trash' ? '🗑️' : 
+                location.type === 'cleanup' ? '✨' : '🌳'
+            )
         }).addTo(map);
 
-        // Create custom icons
-        const trashIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
+        let popupContent = `
+            <h3 class="font-bold text-lg mb-2">${location.title}</h3>
+            <p class="text-gray-600 mb-3">${location.description}</p>
+        `;
+
+        if (location.type === 'cleanup') {
+            popupContent += `
+                <div class="before-after-container mb-3">
+                    <img src="${location.beforeImage}" alt="Before" class="before-image">
+                    <img src="${location.afterImage}" alt="After" class="after-image">
+                    <input type="range" min="0" max="100" value="50" class="slider">
+                </div>
+            `;
+        } else {
+            popupContent += `<img src="${location.image}" alt="${location.title}" class="w-full h-32 object-cover rounded mb-3">`;
+        }
+
+        popupContent += `
+            <button onclick="handleLocationAction('${location.type}', ${location.points}, '${location.title}')" 
+                    class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition duration-200">
+                <i class="fas fa-seedling mr-2"></i>
+                Earn ${location.points} Points
+            </button>
+        `;
+
+        marker.bindPopup(createBeautifulPopup(popupContent, location.type));
+    });
+
+    // Добавление стандартных маркеров
+    addStandardMarkers(map);
+    
+    // Инициализация слайдеров
+    initSliders();
+}
+
+// ===== ФУНКЦИИ ДЛЯ УПРАВЛЕНИЯ ОТЧЕТАМИ =====
+window.verifyReport = function(index) {
+    if (!localStorage.getItem('isLoggedIn') || localStorage.getItem('isLoggedIn') !== 'true') {
+        alert('Please log in to verify reports');
+        return;
+    }
+
+    const reports = JSON.parse(localStorage.getItem('ecoMapReports') || '[]');
+    if (reports[index]) {
+        reports[index].status = 'verified';
+        reports[index].verifiedBy = localStorage.getItem('userName') || 'Anonymous';
+        reports[index].verifiedAt = new Date().toISOString();
+        localStorage.setItem('ecoMapReports', JSON.stringify(reports));
+        
+        // Награда за верификацию
+        addPoints('VERIFY_ISSUE', `Verified report: ${reports[index].title}`);
+        
+        alert('Report verified successfully! +15 points awarded');
+        window.location.reload();
+    }
+}
+
+window.resolveReport = function(index) {
+    if (!localStorage.getItem('isLoggedIn') || localStorage.getItem('isLoggedIn') !== 'true') {
+        alert('Please log in to resolve reports');
+        return;
+    }
+
+    const reports = JSON.parse(localStorage.getItem('ecoMapReports') || '[]');
+    if (reports[index]) {
+        reports[index].status = 'resolved';
+        reports[index].resolvedBy = localStorage.getItem('userName') || 'Anonymous';
+        reports[index].resolvedAt = new Date().toISOString();
+        localStorage.setItem('ecoMapReports', JSON.stringify(reports));
+        
+        // Награда за решение проблемы
+        addPoints('RESOLVE_ISSUE', `Resolved report: ${reports[index].title}`);
+        
+        alert('Report marked as resolved! +25 points awarded');
+        window.location.reload();
+    }
+}
+
+// ===== СИСТЕМА БАЛЛОВ =====
+function addPoints(action, description) {
+    const pointValues = {
+        'REPORT_ISSUE': 25,
+        'VERIFY_ISSUE': 15,
+        'RESOLVE_ISSUE': 25,
+        'ATTEND_EVENT': 50,
+        'COMMUNITY_HELP': 20,
+        'VERIFY_ACTION': 30,
+        'SHARE_ACHIEVEMENT': 10
+    };
+
+    const points = pointValues[action] || 10;
+    
+    // Обновление очков пользователя
+    let userPoints = parseInt(localStorage.getItem('userPoints') || '0');
+    userPoints += points;
+    localStorage.setItem('userPoints', userPoints.toString());
+    
+    // Обновление отображения очков
+    updatePointsDisplay();
+    
+    // Логирование действия
+    const activities = JSON.parse(localStorage.getItem('userActivities') || '[]');
+    activities.unshift({
+        action: action,
+        description: description,
+        points: points,
+        timestamp: new Date().toISOString()
+    });
+    localStorage.setItem('userActivities', JSON.stringify(activities));
+    
+    console.log(`+${points} points for: ${description}`);
+}
+
+function updatePointsDisplay() {
+    const pointsElements = document.querySelectorAll('#user-points span, #points-count');
+    const userPoints = parseInt(localStorage.getItem('userPoints') || '0');
+    
+    pointsElements.forEach(element => {
+        element.textContent = userPoints;
+    });
+}
+
+// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+function createBeautifulPopup(content, type) {
+    const colors = {
+        'trash': 'red',
+        'cleanup': 'green',
+        'planting': 'green'
+    };
+    
+    const color = colors[type] || 'green';
+    
+    return `
+        <div class="eco-popup bg-white rounded-lg shadow-xl p-4 max-w-sm">
+            <div class="border-l-4 border-${color}-500 pl-3">
+                ${content}
+            </div>
+        </div>
+    `;
+}
+
+function initSliders() {
+    document.querySelectorAll('.slider').forEach(slider => {
+        slider.addEventListener('input', function() {
+            const container = this.parentElement;
+            const afterImage = container.querySelector('.after-image');
+            if (afterImage) {
+                afterImage.style.clipPath = `inset(0 0 0 ${this.value}%)`;
+            }
         });
+    });
+}
 
-        const cleanedIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
+// ===== ОБРАБОТЧИК ДЕЙСТВИЙ ДЛЯ МАРКЕРОВ =====
+window.handleLocationAction = function(locationType, points, description) {
+    if (!localStorage.getItem('isLoggedIn') || localStorage.getItem('isLoggedIn') !== 'true') {
+        alert('Please log in to earn points!');
+        return;
+    }
 
-        const plantingIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
+    const actionMap = {
+        'trash': 'COMMUNITY_HELP',
+        'cleanup': 'VERIFY_ACTION',
+        'planting': 'ATTEND_EVENT'
+    };
 
-        const eventIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
+    addPoints(actionMap[locationType] || 'COMMUNITY_HELP', description);
+    alert(`+${points} points for: ${description}`);
+};
 
-        // Add markers data
-        const trashSpots = [
-            { lat: 51.1475, lng: 71.4225, title: "Park Trash Accumulation", description: "Plastic bottles and food wrappers", severity: "Medium" },
-            { lat: 51.1520, lng: 71.4380, title: "Alleyway Dumping", description: "Furniture and household waste", severity: "High" },
-            { lat: 51.1650, lng: 71.4450, title: "Riverbank Pollution", description: "Plastic bags and containers", severity: "High" },
-            { lat: 51.1800, lng: 71.4300, title: "Street Litter", description: "Cigarette butts and small trash", severity: "Low" }
-        ];
+// ===== СТАНДАРТНЫЕ МАРКЕРЫ =====
+function addStandardMarkers(map) {
+    // Создание кастомных иконок
+    const trashIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
 
-        const cleanedAreas = [
-            { lat: 51.1400, lng: 71.4100, title: "Central Park Cleanup", description: "Completed June 5, 2025", volunteers: 15 },
-            { lat: 51.1550, lng: 71.4500, title: "Esil River Cleanup", description: "Completed May 28, 2025", volunteers: 22 }
-        ];
+    const cleanedIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
 
-        const plantingZones = [
-            { lat: 51.1700, lng: 71.4250, title: "Future Tree Planting", description: "50 native trees planned", date: "June 22, 2025" },
-            { lat: 51.1600, lng: 71.4400, title: "Community Garden", description: "Vegetables and flowers", date: "Ongoing" }
-        ];
+    const plantingIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
 
-        const events = [
-            { lat: 51.1500, lng: 71.4350, title: "Park Cleanup Event", description: "June 15, 9AM-12PM", participants: 23 },
-            { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
-        ];
+    const eventIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
 
-        // Add markers to map - UPDATED CODE WITH LOGOS
-        trashSpots.forEach(spot => {
-            L.marker([spot.lat, spot.lng], { icon: trashIcon })
+    // Данные маркеров
+    const trashSpots = [
+        { lat: 51.1475, lng: 71.4225, title: "Park Trash Accumulation", description: "Plastic bottles and food wrappers", severity: "Medium" },
+        { lat: 51.1520, lng: 71.4380, title: "Alleyway Dumping", description: "Furniture and household waste", severity: "High" },
+        { lat: 51.1650, lng: 71.4450, title: "Riverbank Pollution", description: "Plastic bags and containers", severity: "High" },
+        { lat: 51.1800, lng: 71.4300, title: "Street Litter", description: "Cigarette butts and small trash", severity: "Low" }
+    ];
+
+    const cleanedAreas = [
+        { lat: 51.1400, lng: 71.4100, title: "Central Park Cleanup", description: "Completed June 5, 2025", volunteers: 15 },
+        { lat: 51.1550, lng: 71.4500, title: "Esil River Cleanup", description: "Completed May 28, 2025", volunteers: 22 }
+    ];
+
+    const plantingZones = [
+        { lat: 51.1700, lng: 71.4250, title: "Future Tree Planting", description: "50 native trees planned", date: "June 22, 2025" },
+        { lat: 51.1600, lng: 71.4400, title: "Community Garden", description: "Vegetables and flowers", date: "Ongoing" }
+    ];
+
+    const events = [
+        { lat: 51.1500, lng: 71.4350, title: "Park Cleanup Event", description: "June 15, 9AM-12PM", participants: 23 },
+        { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
+    ];
+
+    // Добавление маркеров
+    trashSpots.forEach(spot => {
+        L.marker([spot.lat, spot.lng], { icon: trashIcon })
             .addTo(map)
             .bindPopup(`
-                <img src="logos/trash-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
-                <div class="ml-0">
+                <div class="p-2">
                     <b>${spot.title}</b><br>
                     ${spot.description}<br>
                     <span class="text-red-600">Severity: ${spot.severity}</span>
                 </div>
             `);
-        });
-
-        cleanedAreas.forEach(area => {
-    // Определяем какие фото использовать для каждого места
-    let beforePhoto, afterPhoto;
-    
-    if (area.title === "Central Park Cleanup") {
-        beforePhoto = "images/a-before.jpg";
-        afterPhoto = "images/b-after.jpg";
-    } else if (area.title === "Esil River Cleanup") {
-        beforePhoto = "images/c-before.jpg";
-        afterPhoto = "images/d-after.jpg";
-    } else {
-        // Запасной вариант на случай ошибки
-        beforePhoto = "https://via.placeholder.com/250x150/ff0000/ffffff?text=Before";
-        afterPhoto = "https://via.placeholder.com/250x150/00ff00/ffffff?text=After";
-    }
-
-    L.marker([area.lat, area.lng], { icon: cleanedIcon })
-    .addTo(map)
-    .bindPopup(`
-        <img src="logos/bin-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
-        <div class="ml-0">
-            <b>${area.title}</b><br>
-            ${area.description}<br>
-            Volunteers: ${area.volunteers}<br>
-            <span class="text-green-600">Area Cleaned</span><br>
-            
-            <!-- Before/After slider -->
-            <div class="before-after-container">
-                <div class="before-image">
-                    <img src="${beforePhoto}" alt="Before cleanup" onerror="this.src='https://via.placeholder.com/250x150/ff0000/ffffff?text=Error+Loading+Before'"/>
-                </div>
-                <div class="after-image">
-                    <img src="${afterPhoto}" alt="After cleanup" onerror="this.src='https://via.placeholder.com/250x150/00ff00/ffffff?text=Error+Loading+After'"/>
-                </div>
-                <input type="range" min="0" max="100" value="50" class="slider" />
-            </div>
-            <div class="mt-2 text-xs text-gray-500">
-                Drag slider to see before/after comparison
-            </div>
-        </div>
-    `);
-});
-        plantingZones.forEach(zone => {
-            L.marker([zone.lat, zone.lng], { icon: plantingIcon })
-                .addTo(map)
-                .bindPopup(`
-                    <img src="logos/event-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
-                    <div class="ml-0">
-                        <b>${zone.title}</b><br>
-                        ${zone.description}<br>
-                        Date: ${zone.date}<br>
-                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>
-                    </div>
-                `);
-        });
-
-        events.forEach(event => {
-            L.marker([event.lat, event.lng], { icon: eventIcon })
-                .addTo(map)
-                .bindPopup(`
-                    <img src="logos/event-logo.png" class="popup-logo" style="width: 50px; height: 50px;">
-                    <div class="ml-0">
-                        <b>${event.title}</b><br>
-                        ${event.description}<br>
-                        Participants: ${event.participants}<br>
-                        <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>
-                    </div>
-                `);
-        });
-
-        // Add circles
-        L.circle([51.1900, 71.4000], {
-            color: 'orange',
-            fillColor: 'yellow',
-            fillOpacity: 0.5,
-            radius: 500
-        }).addTo(map).bindPopup("<b>Industrial Zone</b><br>Area with air quality concerns");
-
-        L.circle([51.1450, 71.4150], {
-            color: 'blue',
-            fillColor: 'cyan',
-            fillOpacity: 0.5,
-            radius: 300
-        }).addTo(map).bindPopup("<b>Improved Zone</b><br>Former polluted area now restored by volunteers");
-    }
-
-    // Challenge button functionality if on knowledge page
-    if (document.getElementById('knowledge')) {
-        const challengeBtn = document.querySelector('#knowledge button');
-        if (challengeBtn) {
-            challengeBtn.addEventListener('click', function () {
-                const currentPoints = parseInt(localStorage.getItem('ecoUserPoints') || 0);
-                const newPoints = currentPoints + 25;
-                localStorage.setItem('ecoUserPoints', newPoints);
-                
-                if (userPointsElement) {
-                    userPointsElement.textContent = newPoints;
-                }
-
-                this.innerHTML = '<i class="fas fa-check mr-2"></i> Challenge Completed!';
-                this.classList.remove('bg-green-600', 'hover:bg-green-700');
-                this.classList.add('bg-gray-400', 'cursor-not-allowed');
-                this.disabled = true;
-            });
-        }
-
-        // Quiz answer
-        const quizBtn = document.querySelector('#quiz-container button');
-        if (quizBtn) {
-            quizBtn.addEventListener('click', function () {
-                const selected = document.querySelector('input[name="quiz"]:checked');
-                if (selected && selected.parentElement.textContent.trim().startsWith('9%')) {
-                    alert('Correct! Only about 9% of plastic waste is recycled globally.');
-                    const currentPoints = parseInt(localStorage.getItem('ecoUserPoints') || 0);
-                    const newPoints = currentPoints + 15;
-                    localStorage.setItem('ecoUserPoints', newPoints);
-                    
-                    if (userPointsElement) {
-                        userPointsElement.textContent = newPoints;
-                    }
-                } else {
-                    alert('Incorrect. The correct answer is 9%. Only a small fraction of plastic is recycled.');
-                }
-            });
-        }
-    }
-
-    // Slider logic for "before/after" images
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('slider')) {
-            const afterImg = e.target.parentElement.querySelector('.after-image');
-            if (afterImg) {
-                afterImg.style.clipPath = `inset(0 0 0 ${e.target.value}%)`;
-            }
-        }
     });
+
+    cleanedAreas.forEach(area => {
+        let beforePhoto = "https://via.placeholder.com/250x150/ff0000/ffffff?text=Before";
+        let afterPhoto = "https://via.placeholder.com/250x150/00ff00/ffffff?text=After";
+
+        L.marker([area.lat, area.lng], { icon: cleanedIcon })
+            .addTo(map)
+            .bindPopup(`
+                <div class="p-2">
+                    <b>${area.title}</b><br>
+                    ${area.description}<br>
+                    Volunteers: ${area.volunteers}<br>
+                    <span class="text-green-600">Area Cleaned</span><br>
+                    
+                    <div class="before-after-container">
+                        <div class="before-image">
+                            <img src="${beforePhoto}" alt="Before cleanup"/>
+                        </div>
+                        <div class="after-image">
+                            <img src="${afterPhoto}" alt="After cleanup"/>
+                        </div>
+                        <input type="range" min="0" max="100" value="50" class="slider" />
+                    </div>
+                    <div class="mt-2 text-xs text-gray-500">
+                        Drag slider to see before/after comparison
+                    </div>
+                </div>
+            `);
+    });
+
+    plantingZones.forEach(zone => {
+        L.marker([zone.lat, zone.lng], { icon: plantingIcon })
+            .addTo(map)
+            .bindPopup(`
+                <div class="p-2">
+                    <b>${zone.title}</b><br>
+                    ${zone.description}<br>
+                    Date: ${zone.date}<br>
+                    <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>
+                </div>
+            `);
+    });
+
+    events.forEach(event => {
+        L.marker([event.lat, event.lng], { icon: eventIcon })
+            .addTo(map)
+            .bindPopup(`
+                <div class="p-2">
+                    <b>${event.title}</b><br>
+                    ${event.description}<br>
+                    Participants: ${event.participants}<br>
+                    <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>
+                </div>
+            `);
+    });
+
+    // Добавление кругов
+    L.circle([51.1900, 71.4000], {
+        color: 'orange',
+        fillColor: 'yellow',
+        fillOpacity: 0.5,
+        radius: 500
+    }).addTo(map).bindPopup("<b>Industrial Zone</b><br>Area with air quality concerns");
+
+    L.circle([51.1450, 71.4150], {
+        color: 'blue',
+        fillColor: 'cyan',
+        fillOpacity: 0.5,
+        radius: 300
+    }).addTo(map).bindPopup("<b>Improved Zone</b><br>Former polluted area now restored by volunteers");
+}
+
+// ===== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ =====
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация карты
+    if (document.getElementById('map')) {
+        initMapWithEcoYardStyle();
+    }
+    
+    // Обновление отображения очков
+    updatePointsDisplay();
+    
+    // Инициализация системы аутентификации
+    if (typeof checkAuthState === 'function') {
+        checkAuthState();
+    }
+    
+    // Инициализация кнопки "Наверх"
+    initBackToTop();
+    
+    // Инициализация мобильного меню
+    initMobileMenu();
+});
+
+// ===== КНОПКА "НАВЕРХ" =====
+function initBackToTop() {
+    const backToTopButton = document.getElementById('back-to-top');
+    
+    if (backToTopButton) {
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.remove('hidden');
+            } else {
+                backToTopButton.classList.add('hidden');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+}
+
+// ===== МОБИЛЬНОЕ МЕНЮ =====
+function initMobileMenu() {
+    const menuToggle = document.getElementById('menu-toggle');
+    const navMenu = document.getElementById('nav-menu');
+    
+    if (menuToggle && navMenu) {
+        menuToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('hidden');
+            navMenu.classList.toggle('flex');
+        });
+    }
+}
+
+// ===== ПРОВЕРКА АУТЕНТИФИКАЦИИ =====
+document.addEventListener('DOMContentLoaded', function() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    
+    // Если не на странице профиля и не на главной, проверяем авторизацию
+    const currentPage = window.location.pathname.split('/').pop();
+    if (!['profile.html', 'index.html', 'login.html', ''].includes(currentPage)) {
+        if (!isLoggedIn) {
+            window.location.href = 'login.html';
+        }
+    }
 });

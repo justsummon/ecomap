@@ -30,10 +30,13 @@ function updateNavigation() {
         } else {
             loginBtn.textContent = 'Sign In';
             loginBtn.onclick = function() {
-                window.location.href = 'profile.html';
+                openLoginModal();
             };
         }
     }
+    
+    // Обновление отображения очков
+    updatePointsDisplay();
 }
 
 // Проверяем состояние авторизации при загрузке страницы
@@ -61,8 +64,28 @@ function closeLoginModal() {
 // Функция входа
 function loginUser() {
     localStorage.setItem(AUTH_KEY, 'true');
+    
+    // Инициализация очков пользователя при первом входе
+    if (!localStorage.getItem('userPoints')) {
+        localStorage.setItem('userPoints', '0');
+    }
+    
+    // Инициализация активности пользователя при первом входе
+    if (!localStorage.getItem('userActivities')) {
+        localStorage.setItem('userActivities', '[]');
+    }
+    
+    // Сохранение имени пользователя по умолчанию
+    if (!localStorage.getItem('userName')) {
+        const email = document.querySelector('#loginForm input[type="email"]')?.value || 'user';
+        localStorage.setItem('userName', email.split('@')[0]);
+    }
+    
     updateNavigation();
     closeLoginModal();
+    
+    // Обновление отображения очков
+    updatePointsDisplay();
 }
 
 // Функция выхода
@@ -76,15 +99,55 @@ function logoutUser() {
 function signInWithGoogle() {
     alert('Google Sign In would be implemented here');
     localStorage.setItem(AUTH_KEY, 'true');
+    
+    // Инициализация данных пользователя
+    if (!localStorage.getItem('userPoints')) {
+        localStorage.setItem('userPoints', '0');
+    }
+    if (!localStorage.getItem('userActivities')) {
+        localStorage.setItem('userActivities', '[]');
+    }
+    if (!localStorage.getItem('userName')) {
+        localStorage.setItem('userName', 'Google User');
+    }
+    
     updateNavigation();
     closeLoginModal();
+    
+    updatePointsDisplay();
 }
 
 function signInWithFacebook() {
     alert('Facebook Sign In would be implemented here');
     localStorage.setItem(AUTH_KEY, 'true');
+    
+    // Инициализация данных пользователя
+    if (!localStorage.getItem('userPoints')) {
+        localStorage.setItem('userPoints', '0');
+    }
+    if (!localStorage.getItem('userActivities')) {
+        localStorage.setItem('userActivities', '[]');
+    }
+    if (!localStorage.getItem('userName')) {
+        localStorage.setItem('userName', 'Facebook User');
+    }
+    
     updateNavigation();
     closeLoginModal();
+    
+    updatePointsDisplay();
+}
+
+// Функция для обновления отображения очков
+function updatePointsDisplay() {
+    const pointsElements = document.querySelectorAll('#user-points span, #points-count');
+    const userPoints = parseInt(localStorage.getItem('userPoints') || '0');
+    
+    pointsElements.forEach(element => {
+        if (element.id === 'points-count' || element.parentElement.id === 'user-points') {
+            element.textContent = userPoints;
+        }
+    });
 }
 
 // Инициализация при загрузке документа
