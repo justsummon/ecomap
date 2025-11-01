@@ -1,4 +1,41 @@
 // ===== ОСНОВНЫЕ ФУНКЦИИ КАРТЫ =====
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // Загрузка новых модулей
+        await loadScript('notifications.js');
+        await loadScript('level-system.js');
+        
+        console.log('Все модули загружены');
+    } catch (error) {
+        console.log('Ошибка загрузки модулей:', error);
+    }
+    
+    // Остальная инициализация...
+    if (document.getElementById('map')) {
+        initMapWithEcoYardStyle();
+    }
+    
+    updateNavigation();
+    
+    if (typeof checkAuthState === 'function') {
+        checkAuthState();
+    }
+    
+    initBackToTop();
+    initMobileMenu();
+});
+
 function createCustomIcon(type, severity = 'medium') {
     const severityColors = {
         'low': '#10B981',
@@ -58,7 +95,380 @@ function createCustomIcon(type, severity = 'medium') {
     
     return icons[type] || icons['trash'];
 }
+// ===== СИСТЕМА ПЕРЕВОДОВ =====
+const translations = {
+    en: {
+        // Navigation
+        "home": "Home",
+        "rewards": "Rewards", 
+        "knowledge": "Eco-Knowledge",
+        "community": "Community",
+        "signin": "Sign In",
+        
+        // Common
+        "footer-tagline": "Connecting communities for a cleaner, greener planet.",
+        "quick-links": "Quick Links",
+        "about-us": "About Us",
+        "how-it-works": "How It Works",
+        "success-stories": "Success Stories",
+        "get-involved": "Get Involved",
+        "resources": "Resources",
+        "eco-tips": "Eco Tips",
+        "recycling-guide": "Recycling Guide",
+        "volunteer-handbook": "Volunteer Handbook",
+        "partner-with-us": "Partner With Us",
+        "connect": "Connect",
+        "subscribe-newsletter": "Subscribe to our newsletter",
+        "your-email": "Your email",
+        "privacy-policy": "Privacy Policy",
+        "terms-of-service": "Terms of Service",
+        
+        // Index Page
+        "join-revolution": "Join the Green Revolution",
+        "hero-text": "Track environmental issues, participate in cleanups, earn rewards, and make your community cleaner and greener!",
+        "explore-map": "Explore Map",
+        "report-issue": "Report Issue",
+        "interactive-map": "Interactive Eco Map",
+        "map-filters": "Map Filters",
+        "trash-spots": "Trash Spots",
+        "cleaned-areas": "Cleaned Areas",
+        "planting-zones": "Planting Zones",
+        "polluted-zones": "Polluted Zones",
+        "upcoming-events": "Upcoming Events",
+        "report-an-issue": "Report an Issue",
+        "select-issue-type": "Select issue type",
+        "trash-accumulation": "Trash accumulation",
+        "illegal-dumping": "Illegal dumping",
+        "polluted-water": "Polluted water",
+        "other": "Other",
+        "add-description": "Add description...",
+        "submit-report": "Submit Report",
+        
+        // Knowledge Page
+        "knowledge-hub": "Eco Knowledge Hub",
+        "todays-challenge": "Today's Eco Challenge",
+        "mark-complete": "Mark as Complete",
+        "energy-saving": "Energy Saving",
+        "water-conservation": "Water Conservation",
+        "recycling-facts": "Recycling Facts",
+        "learn-more": "Learn more →",
+        "quick-eco-lessons": "Quick Eco Lessons",
+        "test-knowledge": "Test Your Eco Knowledge",
+        "submit-answer": "Submit Answer",
+        
+        // Community Page
+        "community-title": "Eco Community",
+        "eco-heroes": "This Month's Eco Heroes",
+        "top-contributor": "Top Contributor",
+        "eco-educator": "Eco Educator",
+        "waste-warrior": "Waste Warrior",
+        "rsvp": "RSVP",
+        "attending": "attending",
+        "our-partners": "Our Partners",
+        
+        // Rewards Page
+        "rewards-title": "Earn Rewards for Green Actions",
+        "cleanup-participation": "Cleanup Participation",
+        "tree-planting": "Tree Planting",
+        "eco-challenges": "Eco Challenges",
+        "your-progress": "Your Progress",
+        "points-to-next": "points to next reward",
+        "unlock-reward": "Earn 500 points to unlock your first reward!",
+        "redeem-points": "Redeem Points with Our Partners"
+    },
+    ru: {
+        // Navigation
+        "home": "Главная",
+        "rewards": "Награды",
+        "knowledge": "Эко-знания", 
+        "community": "Сообщество",
+        "signin": "Войти",
+        
+        // Common
+        "footer-tagline": "Объединяем сообщества для более чистого и зеленого мира.",
+        "quick-links": "Быстрые ссылки",
+        "about-us": "О нас",
+        "how-it-works": "Как это работает",
+        "success-stories": "Истории успеха",
+        "get-involved": "Принять участие",
+        "resources": "Ресурсы",
+        "eco-tips": "Эко-советы",
+        "recycling-guide": "Руководство по переработке",
+        "volunteer-handbook": "Руководство волонтера",
+        "partner-with-us": "Стать партнером",
+        "connect": "Связь",
+        "subscribe-newsletter": "Подпишитесь на рассылку",
+        "your-email": "Ваш email",
+        "privacy-policy": "Политика конфиденциальности",
+        "terms-of-service": "Условия использования",
+        
+        // Index Page
+        "join-revolution": "Присоединяйтесь к Зеленой Революции",
+        "hero-text": "Отслеживайте экологические проблемы, участвуйте в уборках, зарабатывайте награды и делайте ваше сообщество чище и зеленее!",
+        "explore-map": "Исследовать карту",
+        "report-issue": "Сообщить о проблеме",
+        "interactive-map": "Интерактивная эко-карта",
+        "map-filters": "Фильтры карты",
+        "trash-spots": "Мусорные точки",
+        "cleaned-areas": "Очищенные зоны",
+        "planting-zones": "Зоны посадки",
+        "polluted-zones": "Загрязненные зоны",
+        "upcoming-events": "Предстоящие события",
+        "report-an-issue": "Сообщить о проблеме",
+        "select-issue-type": "Выберите тип проблемы",
+        "trash-accumulation": "Скопление мусора",
+        "illegal-dumping": "Незаконный сброс",
+        "polluted-water": "Загрязнение воды",
+        "other": "Другое",
+        "add-description": "Добавить описание...",
+        "submit-report": "Отправить отчет",
+        
+        // Knowledge Page
+        "knowledge-hub": "Центр эко-знаний",
+        "todays-challenge": "Сегодняшний эко-челлендж",
+        "mark-complete": "Отметить выполненным",
+        "energy-saving": "Энергосбережение",
+        "water-conservation": "Экономия воды",
+        "recycling-facts": "Факты о переработке",
+        "learn-more": "Узнать больше →",
+        "quick-eco-lessons": "Быстрые эко-уроки",
+        "test-knowledge": "Проверьте свои эко-знания",
+        "submit-answer": "Отправить ответ",
+        
+        // Community Page
+        "community-title": "Эко-сообщество",
+        "eco-heroes": "Эко-герои месяца",
+        "top-contributor": "Лучший участник",
+        "eco-educator": "Эко-педагог",
+        "waste-warrior": "Борец с отходами",
+        "rsvp": "Записаться",
+        "attending": "участвуют",
+        "our-partners": "Наши партнеры",
+        
+        // Rewards Page
+        "rewards-title": "Зарабатывайте награды за экологические действия",
+        "cleanup-participation": "Участие в уборках",
+        "tree-planting": "Посадка деревьев",
+        "eco-challenges": "Эко-челленджи",
+        "your-progress": "Ваш прогресс",
+        "points-to-next": "очков до следующей награды",
+        "unlock-reward": "Заработайте 500 очков, чтобы получить первую награду!",
+        "redeem-points": "Обменяйте очки у наших партнеров"
+    },
+    kz: {
+        // Navigation
+        "home": "Басты",
+        "rewards": "Марапаттар",
+        "knowledge": "Эко-білім",
+        "community": "Қауымдастық",
+        "signin": "Кіру",
+        
+        // Common
+        "footer-tagline": "Тазар әрі жасыл әлем үшін қауымдастықтарды біріктіреміз.",
+        "quick-links": "Жылдам сілтемелер",
+        "about-us": "Біз туралы",
+        "how-it-works": "Қалай жұмыс істейді",
+        "success-stories": "Табыс тарихтары",
+        "get-involved": "Қатысу",
+        "resources": "Ресурстар",
+        "eco-tips": "Эко-кеңестер",
+        "recycling-guide": "Қайта өңдеу нұсқаулығы",
+        "volunteer-handbook": "Волонтер нұсқаулығы",
+        "partner-with-us": "Серіктес болу",
+        "connect": "Байланыс",
+        "subscribe-newsletter": "Жаңалықтарға жазылыңыз",
+        "your-email": "Сіздің email",
+        "privacy-policy": "Құпиялылық саясаты",
+        "terms-of-service": "Қызмет көрсету шарттары",
+        
+        // Index Page
+        "join-revolution": "Жасыл Төңкеріске Қосылыңыз",
+        "hero-text": "Экологиялық мәселелерді бақылаңыз, тазарту жұмыстарына қатысыңыз, марапаттар жинаңыз және қауымыңызды тазар әрі жасыл етіңіз!",
+        "explore-map": "Картаны зерттеу",
+        "report-issue": "Мәселе туралы хабарлау",
+        "interactive-map": "Интерактивті эко-карта",
+        "map-filters": "Карта сүзгілері",
+        "trash-spots": "Қоқыс нүктелері",
+        "cleaned-areas": "Тазартылған аймақтар",
+        "planting-zones": "Отырғызу аймақтары",
+        "polluted-zones": "Ласанған аймақтар",
+        "upcoming-events": "Алдағы оқиғалар",
+        "report-an-issue": "Мәселе туралы хабарлау",
+        "select-issue-type": "Мәселе түрін таңдаңыз",
+        "trash-accumulation": "Қоқыс жиналуы",
+        "illegal-dumping": "Заңсыз қоқыс тастау",
+        "polluted-water": "Судың ластануы",
+        "other": "Басқа",
+        "add-description": "Сипаттама қосу...",
+        "submit-report": "Есепті жіберу",
+        
+        // Knowledge Page
+        "knowledge-hub": "Эко-білім орталығы",
+        "todays-challenge": "Бүгінгі эко-сынақ",
+        "mark-complete": "Орындалды деп белгілеу",
+        "energy-saving": "Энергия үнемдеу",
+        "water-conservation": "Су үнемдеу",
+        "recycling-facts": "Қайта өңдеу туралы фактілер",
+        "learn-more": "Көбірек білу →",
+        "quick-eco-lessons": "Жылдам эко-сабақтар",
+        "test-knowledge": "Эко-біліміңізді тексеріңіз",
+        "submit-answer": "Жауапты жіберу",
+        
+        // Community Page
+        "community-title": "Эко-қауымдастық",
+        "eco-heroes": "Айдың эко-батырлары",
+        "top-contributor": "Үздік қатысушы",
+        "eco-educator": "Эко-педагог",
+        "waste-warrior": "Қоқыспен күрескер",
+        "rsvp": "Тіркелу",
+        "attending": "қатысады",
+        "our-partners": "Біздің серіктестер",
+        
+        // Rewards Page
+        "rewards-title": "Экологиялық әрекеттер үшін марапаттар жинаңыз",
+        "cleanup-participation": "Тазартуға қатысу",
+        "tree-planting": "Ағаш отырғызу",
+        "eco-challenges": "Эко-сынақтар",
+        "your-progress": "Сіздің прогрессіңіз",
+        "points-to-next": "ұпай келесі марапатқа дейін",
+        "unlock-reward": "Алғашқы марапатты алу үшін 500 ұпай жинаңыз!",
+        "redeem-points": "Біздің серіктестерден ұпайларды айырбастаңыз"
+    }
+};
 
+// Current language
+let currentLang = localStorage.getItem('selectedLanguage') || 'en';
+
+// Function to translate text
+function translateText() {
+    console.log('Translating to:', currentLang);
+    
+    document.querySelectorAll('[data-translate]').forEach(element => {
+        const key = element.getAttribute('data-translate');
+        if (translations[currentLang] && translations[currentLang][key]) {
+            element.textContent = translations[currentLang][key];
+        } else {
+            console.warn('Missing translation for key:', key, 'in language:', currentLang);
+        }
+    });
+    
+    document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-translate-placeholder');
+        if (translations[currentLang] && translations[currentLang][key]) {
+            element.setAttribute('placeholder', translations[currentLang][key]);
+        }
+    });
+    
+    // Update current language display
+    const currentLangElement = document.getElementById('current-language');
+    if (currentLangElement) {
+        currentLangElement.textContent = currentLang.toUpperCase();
+    }
+}
+
+// Initialize language system
+function initLanguageSystem() {
+    // Load saved language
+    const savedLang = localStorage.getItem('selectedLanguage');
+    if (savedLang) {
+        currentLang = savedLang;
+    }
+    
+    // Set initial language
+    translateText();
+    
+    // Language toggle functionality
+    const languageToggle = document.getElementById('language-toggle');
+    if (languageToggle) {
+        languageToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('language-dropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('hidden');
+            }
+        });
+    }
+
+    // Language selection
+    document.querySelectorAll('#language-dropdown button').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const lang = this.getAttribute('data-lang');
+            currentLang = lang;
+            localStorage.setItem('selectedLanguage', lang);
+            
+            // Update UI
+            const currentLangElement = document.getElementById('current-language');
+            if (currentLangElement) {
+                currentLangElement.textContent = 
+                    lang === 'en' ? 'EN' : lang === 'ru' ? 'RU' : 'KZ';
+            }
+            
+            const dropdown = document.getElementById('language-dropdown');
+            if (dropdown) {
+                dropdown.classList.add('hidden');
+            }
+            
+            // Translate all text
+            translateText();
+        });
+    });
+
+    // Close language dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const languageToggle = document.getElementById('language-toggle');
+        const languageDropdown = document.getElementById('language-dropdown');
+        
+        if (languageToggle && languageDropdown && 
+            !languageToggle.contains(event.target) && 
+            !languageDropdown.contains(event.target)) {
+            languageDropdown.classList.add('hidden');
+        }
+    });
+}
+
+// ===== ОСНОВНЫЕ ФУНКЦИИ КАРТЫ =====
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // Загрузка новых модулей
+        await loadScript('notifications.js');
+        await loadScript('level-system.js');
+        
+        console.log('Все модули загружены');
+    } catch (error) {
+        console.log('Ошибка загрузки модулей:', error);
+    }
+    
+    // Инициализация системы переводов ПЕРВОЙ
+    initLanguageSystem();
+    
+    // Остальная инициализация...
+    if (document.getElementById('map')) {
+        initMapWithEcoYardStyle();
+    }
+    
+    updateNavigation();
+    
+    if (typeof checkAuthState === 'function') {
+        checkAuthState();
+    }
+    
+    initBackToTop();
+    initMobileMenu();
+});
+
+// ... остальной ваш код остается без изменений ...
 function initMapWithEcoYardStyle() {
     if (!document.getElementById('map')) return;
 
@@ -70,7 +480,7 @@ function initMapWithEcoYardStyle() {
     const map = L.map('map').setView([51.1605, 71.4704], 12);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; EcoMap Community'
+        attribution: '&copy; EcoYard Community'
     }).addTo(map);
 
     // Принудительно обновляем размер карты после загрузки
@@ -238,8 +648,8 @@ function initMapWithEcoYardStyle() {
             type: 'cleanup',
             title: 'Стадион им. Мунайтпасова',
             description: 'This stadium area was transformed by 22 volunteers last month. See the amazing cleanup results!',
-            beforeImage: 'https://github.com/justsummon/ecomap/blob/main/images/photo_stadium_before.jpg?raw=true',
-            afterImage: 'https://github.com/justsummon/ecomap/blob/main/images/photo_stadium_after.jpg?raw=true',
+            beforeImage: 'https://github.com/justsummon/ecomap/blob/main/stadium_before.jpg?raw=true',
+            afterImage: 'https://github.com/justsummon/ecomap/blob/main/stadium_after.jpg?raw=true',
             points: 75
         },
         {
@@ -633,6 +1043,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+// ===== ОБРАБОТЧИК КНОПКИ "REPORT ISSUE" =====
+document.addEventListener('DOMContentLoaded', function() {
+    const reportIssueBtn = document.getElementById('report-issue-btn');
+    
+    if (reportIssueBtn) {
+        reportIssueBtn.addEventListener('click', function() {
+            handleReportIssue();
+        });
+    }
+});
+
+function handleReportIssue() {
+    // Проверяем авторизацию пользователя
+    if (!localStorage.getItem('isLoggedIn') || localStorage.getItem('isLoggedIn') !== 'true') {
+        alert('Please log in to report environmental issues');
+        // Перенаправляем на страницу логина
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Перенаправляем на страницу создания отчета
+    window.location.href = 'report-issue.html';
+}
 
 // ===== ОБРАБОТКА ОШИБОК КАРТЫ =====
 function handleMapErrors() {
@@ -647,6 +1080,17 @@ function handleMapErrors() {
         }, 2000);
     }
 }
+// Закрытие модального окна при клике вне его
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+});
 
 // Вызовите эту функцию после инициализации карты
 document.addEventListener('DOMContentLoaded', function() {
