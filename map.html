@@ -3,25 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoMap - Interactive Map with Navigation</title>
+    <title>EcoYard - Interactive Map with Enhanced Features</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Leaflet Routing Machine -->
+    <!-- Leaflet Plugins -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <style>
-        .before-after-container {
+        /* Enhanced styles for the map */
+        .enhanced-map {
+            height: 100vh;
+            width: 100%;
+            border-radius: 0;
+        }
+        
+        .enhanced-controls {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .enhanced-popup {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .enhanced-popup .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            padding: 0;
+        }
+        
+        .enhanced-popup .leaflet-popup-content {
+            margin: 0;
+            width: 300px !important;
+        }
+        
+        .heatmap-legend {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .heatmap-gradient {
+            height: 20px;
+            width: 100%;
+            background: linear-gradient(to right, blue, cyan, lime, yellow, red);
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        
+        .cluster-marker {
+            background-color: rgba(16, 185, 129, 0.8);
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 3px solid white;
+        }
+        
+        .cluster-marker-small {
+            width: 40px;
+            height: 40px;
+            font-size: 14px;
+        }
+        
+        .cluster-marker-medium {
+            width: 50px;
+            height: 50px;
+            font-size: 16px;
+        }
+        
+        .cluster-marker-large {
+            width: 60px;
+            height: 60px;
+            font-size: 18px;
+        }
+        
+        .enhanced-before-after {
             position: relative;
-            width: 250px;
-            height: 150px;
+            width: 100%;
+            height: 180px;
             overflow: hidden;
             border-radius: 8px;
-            margin-top: 10px;
+            margin: 10px 0;
         }
-        .before-after-container img {
+        
+        .enhanced-before-after img {
             position: absolute;
             top: 0;
             left: 0;
@@ -29,10 +109,12 @@
             height: 100%;
             object-fit: cover;
         }
-        .after-image {
+        
+        .enhanced-after-image {
             clip-path: inset(0 0 0 50%);
         }
-        .slider {
+        
+        .enhanced-slider {
             position: absolute;
             bottom: 10px;
             left: 50%;
@@ -45,86 +127,165 @@
             background: rgba(255, 255, 255, 0.3);
             border-radius: 10px;
             cursor: pointer;
-        }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #fff;
-            border: 2px solid #16a34a;
-            cursor: pointer;
-        }
-        .slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #fff;
-            border: 2px solid #16a34a;
-            cursor: pointer;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
         
-        /* Стили для панели навигации */
-        .navigation-controls {
+        .enhanced-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #16a34a;
+            border: 3px solid white;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .enhanced-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #16a34a;
+            border: 3px solid white;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .navigation-controls, .map-controls, .route-info-panel {
             position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .navigation-controls {
             top: 100px;
             left: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
-            width: 250px;
+            width: 280px;
         }
         
         .route-info-panel {
-            position: absolute;
             top: 250px;
             left: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
-            width: 250px;
+            width: 280px;
         }
         
         .map-controls {
-            position: absolute;
             bottom: 20px;
             right: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
-            width: 250px;
+            width: 280px;
         }
         
         .transport-mode-btn {
             padding: 8px 12px;
             margin: 5px;
-            border-radius: 5px;
+            border-radius: 8px;
             background: #f1f5f9;
             border: none;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
         
         .transport-mode-btn.active {
             background: #16a34a;
             color: white;
+            transform: scale(1.05);
+        }
+        
+        .transport-mode-btn:hover:not(.active) {
+            background: #e2e8f0;
+        }
+        
+        .filter-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .filter-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .filter-content.expanded {
+            max-height: 300px;
+        }
+        
+        .enhanced-btn {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+        }
+        
+        .enhanced-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4);
+        }
+        
+        .enhanced-btn.secondary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .enhanced-btn.secondary:hover {
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+        
+        .enhanced-btn.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        .enhanced-btn.danger:hover {
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .navigation-controls, .map-controls, .route-info-panel {
+                width: 90%;
+                left: 5%;
+                right: 5%;
+            }
+            
+            .navigation-controls {
+                top: 80px;
+            }
+            
+            .map-controls {
+                bottom: 80px;
+            }
+            
+            .route-info-panel {
+                top: 350px;
+            }
         }
     </style>
 </head>
 <body class="bg-green-50">
-    <!-- Header -->
+    <!-- Enhanced Header -->
     <header class="bg-green-600 text-white shadow-lg fixed w-full top-0 z-10">
-        <div class="container mx-auto px-4 py-6">
+        <div class="container mx-auto px-4 py-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="flex items-center justify-between w-full md:w-auto">
                     <div class="flex items-center mb-4 md:mb-0">
                         <i class="fas fa-leaf text-3xl mr-3"></i>
-                        <h1 class="text-2xl font-bold">EcoMap</h1>
+                        <h1 class="text-2xl font-bold">EcoYard</h1>
                     </div>
                     <button class="md:hidden text-white focus:outline-none" id="menu-toggle">
                         <i class="fas fa-bars text-2xl"></i>
@@ -159,672 +320,701 @@
         </div>
     </header>
 
-    <!-- Модальное окно для входа -->
-    <div id="loginModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="modal-content bg-white rounded-lg p-6 w-96 mx-4">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-green-800">Sign In</h3>
-                <button class="close text-gray-500 hover:text-gray-700 text-xl">&times;</button>
-            </div>
-            
-            <form id="loginForm" class="space-y-4">
-                <div>
-                    <input type="email" placeholder="Email" class="w-full p-3 border border-green-300 rounded" required>
-                </div>
-                <div>
-                    <input type="password" placeholder="Password" class="w-full p-3 border border-green-300 rounded" required>
-                </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700 transition">
-                    Sign In
-                </button>
-            </form>
-            
-            <div class="my-4 text-center text-sm text-gray-600">Or continue with</div>
-            
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <button class="bg-white border border-gray-300 py-2 rounded flex items-center justify-center hover:bg-gray-50" onclick="signInWithGoogle()">
-                    <i class="fab fa-google text-red-500 mr-2"></i>
-                    Google
-                </button>
-                <button class="bg-white border border-gray-300 py-2 rounded flex items-center justify-center hover:bg-gray-50" onclick="signInWithFacebook()">
-                    <i class="fab fa-facebook text-blue-600 mr-2"></i>
-                    Facebook
-                </button>
-            </div>
-            
-            <p class="text-center text-sm text-gray-600">
-                Don't have an account? 
-                <a href="profile.html" class="text-green-600 hover:underline">Sign Up</a>
-            </p>
-        </div>
-    </div>
-
-    <!-- Fullscreen Map Section -->
-    <section id="map-section" class="pt-20 h-screen">
-        <div id="fullscreen-map" class="h-full w-full"></div>
+    <!-- Enhanced Fullscreen Map Section -->
+    <section id="map-section" class="pt-16 h-screen">
+        <div id="enhanced-map" class="enhanced-map"></div>
         
-        <!-- Navigation Controls -->
+        <!-- Enhanced Navigation Controls -->
         <div class="navigation-controls">
-            <h3 class="text-lg font-semibold mb-2 text-green-800" data-translate="navigation">Navigation</h3>
-            <button id="locate-me-btn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition flex items-center w-full mb-2">
+            <h3 class="text-lg font-semibold mb-3 text-green-800 flex items-center">
+                <i class="fas fa-route mr-2"></i>
+                <span data-translate="navigation">Navigation</span>
+            </h3>
+            <button id="locate-me-btn" class="enhanced-btn w-full mb-2">
                 <i class="fas fa-location-arrow mr-2"></i> 
                 <span data-translate="my-location">My Location</span>
             </button>
-            <button id="start-navigation-btn" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition flex items-center w-full mb-2">
+            <button id="start-navigation-btn" class="enhanced-btn secondary w-full mb-2">
                 <i class="fas fa-route mr-2"></i> 
                 <span data-translate="start-navigation">Start Navigation</span>
             </button>
-            <button id="clear-route-btn" class="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition flex items-center w-full">
+            <button id="clear-route-btn" class="enhanced-btn danger w-full">
                 <i class="fas fa-times mr-2"></i> 
                 <span data-translate="clear-route">Clear Route</span>
             </button>
         </div>
         
-        <!-- Route Info Panel -->
+        <!-- Enhanced Route Info Panel -->
         <div id="route-info-panel" class="route-info-panel hidden">
-            <h4 class="font-semibold mb-2" data-translate="route-information">Route Information</h4>
-            <div class="transport-mode-selector mb-3">
+            <h4 class="font-semibold mb-2 flex items-center">
+                <i class="fas fa-info-circle mr-2 text-green-600"></i>
+                <span data-translate="route-information">Route Information</span>
+            </h4>
+            <div class="transport-mode-selector mb-3 flex justify-between">
                 <button class="transport-mode-btn active" data-mode="car">
                     <i class="fas fa-car mr-1"></i> <span data-translate="car">Car</span>
+                </button>
+                <button class="transport-mode-btn" data-mode="bike">
+                    <i class="fas fa-bicycle mr-1"></i> <span>Bike</span>
                 </button>
                 <button class="transport-mode-btn" data-mode="walk">
                     <i class="fas fa-walking mr-1"></i> <span data-translate="walk">Walk</span>
                 </button>
             </div>
 
-            <div id="route-distance" data-translate="distance">Distance: -</div>
-            <div id="route-time" data-translate="time">Time: -</div>
+            <div id="route-distance" class="mb-2">
+                <i class="fas fa-ruler-combined mr-2 text-gray-500"></i>
+                <span data-translate="distance">Distance: -</span>
+            </div>
+            <div id="route-time" class="mb-2">
+                <i class="fas fa-clock mr-2 text-gray-500"></i>
+                <span data-translate="time">Time: -</span>
+            </div>
+            <div id="route-co2" class="text-sm text-gray-600">
+                <i class="fas fa-leaf mr-2"></i>
+                <span>CO2 Savings: -</span>
+            </div>
         </div>
         
-        <!-- Map Controls Overlay -->
+        <!-- Enhanced Map Controls -->
         <div class="map-controls">
-            <h3 class="text-lg font-semibold mb-3 text-green-800" data-translate="map-filters">Map Filters</h3>
-            <div class="space-y-3">
-                <div class="flex items-center">
-                    <input type="checkbox" id="full-trash-spots" class="mr-3 h-5 w-5" checked>
-                    <label for="full-trash-spots" class="text-green-800" data-translate="trash-spots">Trash Spots</label>
+            <div class="filter-toggle" id="filters-toggle">
+                <h3 class="text-lg font-semibold text-green-800 flex items-center">
+                    <i class="fas fa-filter mr-2"></i>
+                    <span data-translate="map-filters">Map Filters</span>
+                </h3>
+                <i class="fas fa-chevron-down text-green-600 transition-transform" id="filters-arrow"></i>
+            </div>
+            
+            <div class="filter-content" id="filters-content">
+                <div class="space-y-3 mt-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                            <label for="full-trash-spots" class="text-green-800" data-translate="trash-spots">Trash Spots</label>
+                        </div>
+                        <input type="checkbox" id="full-trash-spots" class="h-5 w-5 rounded filter-checkbox" data-type="trash" checked>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                            <label for="full-cleaned-areas" class="text-green-800" data-translate="cleaned-areas">Cleaned Areas</label>
+                        </div>
+                        <input type="checkbox" id="full-cleaned-areas" class="h-5 w-5 rounded filter-checkbox" data-type="cleanup" checked>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                            <label for="full-planting-zones" class="text-green-800" data-translate="planting-zones">Planting Zones</label>
+                        </div>
+                        <input type="checkbox" id="full-planting-zones" class="h-5 w-5 rounded filter-checkbox" data-type="planting" checked>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                            <label for="full-polluted-zones" class="text-green-800" data-translate="polluted-zones">Polluted Zones</label>
+                        </div>
+                        <input type="checkbox" id="full-polluted-zones" class="h-5 w-5 rounded filter-checkbox" data-type="pollution" checked>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
+                            <label for="full-events" class="text-green-800" data-translate="upcoming-events">Upcoming Events</label>
+                        </div>
+                        <input type="checkbox" id="full-events" class="h-5 w-5 rounded filter-checkbox" data-type="event" checked>
+                    </div>
                 </div>
-                <div class="flex items-center">
-                    <input type="checkbox" id="full-cleaned-areas" class="mr-3 h-5 w-5" checked>
-                    <label for="full-cleaned-areas" class="text-green-800" data-translate="cleaned-areas">Cleaned Areas</label>
-                </div>
-                <div class="flex items-center">
-                    <input type="checkbox" id="full-planting-zones" class="mr-3 h-5 w-5" checked>
-                    <label for="full-planting-zones" class="text-green-800" data-translate="planting-zones">Planting Zones</label>
-                </div>
-                <div class="flex items-center">
-                    <input type="checkbox" id="full-polluted-zones" class="mr-3 h-5 w-5" checked>
-                    <label for="full-polluted-zones" class="text-green-800" data-translate="polluted-zones">Polluted Zones</label>
-                </div>
-                <div class="flex items-center">
-                    <input type="checkbox" id="full-events" class="mr-3 h-5 w-5" checked>
-                    <label for="full-events" class="text-green-800" data-translate="upcoming-events">Upcoming Events</label>
+                
+                <div class="mt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-700">Heatmap</span>
+                        <input type="checkbox" id="heatmap-toggle" class="h-5 w-5 rounded">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">Cluster Markers</span>
+                        <input type="checkbox" id="cluster-toggle" class="h-5 w-5 rounded" checked>
+                    </div>
                 </div>
             </div>
             
             <hr class="my-4 border-green-200">
             
-            <h3 class="text-lg font-semibold mb-3 text-green-800" data-translate="report-an-issue">Report an Issue</h3>
-            <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition" onclick="window.location.href='report-issue.html'">
+            <button class="enhanced-btn w-full" onclick="window.location.href='report-issue.html'">
                 <i class="fas fa-plus-circle mr-2"></i> <span data-translate="report-issue">Report Issue</span>
             </button>
+        </div>
+        
+        <!-- Heatmap Legend -->
+        <div class="heatmap-legend absolute bottom-20 left-1/2 transform -translate-x-1/2 hidden" id="heatmap-legend">
+            <div class="text-center text-sm font-medium text-gray-700">Issue Density</div>
+            <div class="heatmap-gradient"></div>
+            <div class="flex justify-between text-xs text-gray-600 mt-1">
+                <span>Low</span>
+                <span>High</span>
+            </div>
         </div>
     </section>
 
     <script src="auth.js"></script>
-    <script src="script.js"></script>
     <script>
-        // Translation dictionary
-        const translations = {
-            en: {
-                // Navigation
-                "navigation": "Navigation",
-                "my-location": "My Location",
-                "start-navigation": "Start Navigation",
-                "clear-route": "Clear Route",
-                "route-information": "Route Information",
-                "distance": "Distance: -",
-                "time": "Time: -",
-                "navigate-here": "Navigate Here",
-                "your-location": "Your location",
-                "destination": "Destination",
-                
-                // Transport modes
-                "car": "Car",
-                "walk": "Walk",
-                
-                // Map Filters
-                "map-filters": "Map Filters",
-                "trash-spots": "Trash Spots",
-                "cleaned-areas": "Cleaned Areas",
-                "planting-zones": "Planting Zones",
-                "polluted-zones": "Polluted Zones",
-                "upcoming-events": "Upcoming Events",
-                "report-an-issue": "Report an Issue",
-                "report-issue": "Report Issue",
-                
-                // Messages
-                "location-permission": "EcoMap would like to use your location to provide navigation. Allow?",
-                "need-destination": "Please set a destination first by clicking on the map or a marker.",
-                "location-error": "Unable to get your location. Please check your location settings.",
-                "geolocation-error": "Geolocation is not supported by your browser.",
-                
-                // Route instructions
-                "head": "Head",
-                "continue": "Continue",
-                "turn-left": "Turn left",
-                "turn-right": "Turn right",
-                "keep-left": "Keep left",
-                "keep-right": "Keep right",
-                "roundabout": "At roundabout, take exit",
-                "onto": "onto",
-                "destination-reached": "You have arrived at your destination",
-                
-                // Directions
-                "north": "north",
-                "south": "south", 
-                "east": "east",
-                "west": "west",
-                "northeast": "northeast",
-                "northwest": "northwest",
-                "southeast": "southeast",
-                "southwest": "southwest",
-                
-                // Other UI elements
-                "home": "Home",
-                "rewards": "Rewards",
-                "knowledge": "Eco-Knowledge",
-                "community": "Community",
-                "signin": "Sign In"
-            },
-            ru: {
-                // Navigation
-                "navigation": "Навигация",
-                "my-location": "Мое местоположение",
-                "start-navigation": "Начать навигацию",
-                "clear-route": "Очистить маршрут",
-                "route-information": "Информация о маршруте",
-                "distance": "Расстояние: -",
-                "time": "Время: -",
-                "navigate-here": "Проложить маршрут",
-                "your-location": "Ваше местоположение",
-                "destination": "Место назначения",
-                
-                // Transport modes
-                "car": "Машина",
-                "walk": "Пешком",
-                
-                // Map Filters
-                "map-filters": "Фильтры карта",
-                "trash-spots": "Мусорные точки",
-                "cleaned-areas": "Очищенные зоны",
-                "planting-zones": "Зоны посадки",
-                "polluted-zones": "Загрязненные зоны",
-                "upcoming-events": "Предстоящие события",
-                "report-an-issue": "Сообщить о проблеме",
-                "report-issue": "Сообщить о проблеме",
-                
-                // Messages
-                "location-permission": "EcoMap хотел бы использовать ваше местоположение для навигации. Разрешить?",
-                "need-destination": "Пожалуйста, сначала установите пункт назначения, нажав на карту или маркер.",
-                "location-error": "Не удалось определить ваше местоположение. Проверьте настройки геолокации.",
-                "geolocation-error": "Ваш браузер не поддерживает геолокацию.",
-                
-                // Route instructions
-                "head": "Двигайтесь",
-                "continue": "Продолжайте движение",
-                "turn-left": "Поверните налево",
-                "turn-right": "Поверните направо",
-                "keep-left": "Держитесь левее",
-                "keep-right": "Держитесь правее",
-                "roundabout": "На кольце, сверните на",
-                "onto": "на",
-                "destination-reached": "Вы прибыли в пункт назначения",
-                
-                // Directions
-                "north": "север",
-                "south": "юг", 
-                "east": "восток",
-                "west": "запад",
-                "northeast": "северо-восток",
-                "northwest": "северо-запад",
-                "southeast": "юго-восток",
-                "southwest": "юго-запад",
-                
-                // Other UI elements
-                "home": "Главная",
-                "rewards": "Награды",
-                "knowledge": "Эко-знания",
-                "community": "Сообщество",
-                "signin": "Войти"
-            },
-            kz: {
-                // Navigation
-                "navigation": "Навигация",
-                "my-location": "Менің орнам",
-                "start-navigation": "Навигацияны бастау",
-                "clear-route": "Маршрутты тазарту",
-                "route-information": "Маршрут туралы ақпарат",
-                "distance": "Қашықтық: -",
-                "time": "Уақыт: -",
-                "navigate-here": "Маршрут құру",
-                "your-location": "Сіздің орналасқан жеріңіз",
-                "destination": "Баратын жер",
-                
-                // Transport modes
-                "car": "Көлік",
-                "walk": "Жәңгіма",
-                
-                // Map Filters
-                "map-filters": "Карта сүзгілері",
-                "trash-spots": "Қоқыс нүктелері",
-                "cleaned-areas": "Тазартылған аймақтар",
-                "planting-zones": "Отырғызу аймақтары",
-                "polluted-zones": "Ласанған аймақтар",
-                "upcoming-events": "Алдағы оқиғалар",
-                "report-an-issue": "Мәселе туралы хабарлау",
-                "report-issue": "Мәселе туралы хабарлау",
-                
-                // Messages
-                "location-permission": "EcoMap навигацияны ұсыну үшін сіздің орналасқан жеріңізді пайдаланғысы келеді. Рұқсат етесіз бе?",
-                "need-destination": "Алдымен картаны немесе маркерді басу арқылы баратын жерді орнатыңыз.",
-                "location-error": "Сіздің орналасқан жеріңізді анықтау мүмкін болмады. Геолокация параметрлерін тексеріңіз.",
-                "geolocation-error": "Сіздің браузеріңіз геолокацияны қолдамайды.",
-                
-                // Route instructions
-                "head": "Жүріңіз",
-                "continue": "Жүруді жалғастырыңыз",
-                "turn-left": "Солға бұрылыңыз",
-                "turn-right": "Оңға бұрылыңыз",
-                "keep-left": "Солда қалыңыз",
-                "keep-right": "Оңда қалыңыз",
-                "roundabout": "Айналыс буынында, шығыңыз",
-                "onto": "-ге",
-                "destination-reached": "Сіз баратын жерге жеттіңіз",
-                
-                // Directions
-                "north": "солтүстік",
-                "south": "оңтүстік", 
-                "east": "шығыс",
-                "west": "батыс",
-                "northeast": "солтүстік-шығыс",
-                "northwest": "солтүстік-батыс",
-                "southeast": "оңтүстік-шығыс",
-                "southwest": "оңтүстік-батыс",
-                
-                // Other UI elements
-                "home": "Басты",
-                "rewards": "Марапаттар",
-                "knowledge": "Эко-білім",
-                "community": "Қауымдастық",
-                "signin": "Кіру"
-            }
-        };
-
-        // Current language
-        let currentLang = 'en';
-
-        // Function to translate text
-        function translateText() {
-            document.querySelectorAll('[data-translate]').forEach(element => {
-                const key = element.getAttribute('data-translate');
-                if (translations[currentLang][key]) {
-                    element.textContent = translations[currentLang][key];
-                }
-            });
-            
-            document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
-                const key = element.getAttribute('data-translate-placeholder');
-                if (translations[currentLang][key]) {
-                    element.setAttribute('placeholder', translations[currentLang][key]);
-                }
-            });
-            
-            // Update route info if displayed
-            updateRouteInfo();
-        }
-
-        // Function to translate route instructions
-        function translateInstruction(instruction) {
-            let translated = instruction;
-            
-            // Translate directions
-            Object.keys(translations[currentLang]).forEach(key => {
-                if (['north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest'].includes(key)) {
-                    const regex = new RegExp('\\b' + key + '\\b', 'gi');
-                    translated = translated.replace(regex, translations[currentLang][key]);
-                }
-            });
-            
-            // Translate common phrases
-            if (currentLang !== 'en') {
-                translated = translated.replace(/\bHead\b/gi, translations[currentLang]['head']);
-                translated = translated.replace(/\bContinue\b/gi, translations[currentLang]['continue']);
-                translated = translated.replace(/\bTurn left\b/gi, translations[currentLang]['turn-left']);
-                translated = translated.replace(/\bTurn right\b/gi, translations[currentLang]['turn-right']);
-                translated = translated.replace(/\bKeep left\b/gi, translations[currentLang]['keep-left']);
-                translated = translated.replace(/\bKeep right\b/gi, translations[currentLang]['keep-right']);
-                translated = translated.replace(/\bonto\b/gi, translations[currentLang]['onto']);
-                translated = translated.replace(/\bAt roundabout, take exit\b/gi, translations[currentLang]['roundabout']);
-                translated = translated.replace(/\bYou have arrived at your destination\b/gi, translations[currentLang]['destination-reached']);
-            }
-            
-            return translated;
-        }
-
-        // Function to format time
-        function formatTime(minutes) {
-            if (minutes < 60) {
-                return `${Math.round(minutes)} мин`;
-            } else {
-                const hours = minutes / 60;
-                // Округляем до десятых, но если число целое, показываем без десятичных
-                return hours % 1 === 0 ? `${hours} ч` : `${hours.toFixed(1)} ч`;
-            }
-        }
-
-        // Function to calculate travel time
-        function calculateTravelTime(distanceKm, mode = 'car') {
-            // Средние скорости (в км/ч)
-            const speeds = {
-                'car': 50,    // средняя скорость автомобиля в городе
-                'walk': 5      // средняя скорость пешехода
-            };
-            
-            const speed = speeds[mode] || 50; // по умолчанию автомобиль
-            const timeMinutes = (distanceKm / speed) * 60;
-            
-            return timeMinutes;
-        }
-
-        // Initialize fullscreen map with markers and navigation
+        // Enhanced map initialization
         document.addEventListener('DOMContentLoaded', function() {
-            const map = L.map('fullscreen-map').setView([51.1605, 71.4704], 13);
+            // Initialize the enhanced map
+            const map = L.map('enhanced-map', {
+                zoomControl: false,
+                attributionControl: false
+            }).setView([51.1605, 71.4704], 13);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            // Add tile layer with multiple options
+            const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
-            // Variables for navigation
+            // Optional: Add satellite layer
+            const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; <a href="https://www.esri.com/">Esri</a>'
+            });
+
+            // Add zoom control with better positioning
+            L.control.zoom({
+                position: 'topright'
+            }).addTo(map);
+
+            // Add scale control
+            L.control.scale({
+                imperial: false,
+                position: 'bottomleft'
+            }).addTo(map);
+
+            // Add layer control
+            const baseMaps = {
+                "Street Map": osmLayer,
+                "Satellite": satelliteLayer
+            };
+            L.control.layers(baseMaps, null, {
+                position: 'topright'
+            }).addTo(map);
+
+            // Variables for enhanced features
             let userLocation = null;
             let userLocationMarker = null;
             let destinationMarker = null;
             let routingControl = null;
             let isNavigating = false;
-
             let currentTravelMode = 'car';
+            let markersCluster = null;
+            let heatmapLayer = null;
+            let allMarkers = [];
+            let markerLayers = {
+                trash: L.layerGroup(),
+                cleanup: L.layerGroup(),
+                planting: L.layerGroup(),
+                pollution: L.layerGroup(),
+                event: L.layerGroup()
+            };
 
-            // Create custom icons
-            const userIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-gold.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
+            // Create enhanced custom icons
+            const createEnhancedIcon = (type, severity = 'medium') => {
+                const severityColors = {
+                    'low': '#10B981',
+                    'medium': '#F59E0B', 
+                    'high': '#F97316',
+                    'critical': '#EF4444'
+                };
+                
+                const color = severityColors[severity] || '#EF4444';
+                const size = [36, 36];
+                
+                const icons = {
+                    'trash': L.divIcon({
+                        html: `
+                            <div style="background-color: ${color};" class="rounded-full w-9 h-9 flex items-center justify-center text-white shadow-lg border-3 border-white transform transition-transform hover:scale-110">
+                                <i class="fas fa-trash text-sm"></i>
+                            </div>
+                        `,
+                        iconSize: size,
+                        className: 'enhanced-marker'
+                    }),
+                    'cleanup': L.divIcon({
+                        html: `
+                            <div style="background-color: #10B981;" class="rounded-full w-9 h-9 flex items-center justify-center text-white shadow-lg border-3 border-white transform transition-transform hover:scale-110">
+                                <i class="fas fa-check text-sm"></i>
+                            </div>
+                        `,
+                        iconSize: size,
+                        className: 'enhanced-marker'
+                    }),
+                    'planting': L.divIcon({
+                        html: `
+                            <div style="background-color: #22C55E;" class="rounded-full w-9 h-9 flex items-center justify-center text-white shadow-lg border-3 border-white transform transition-transform hover:scale-110">
+                                <i class="fas fa-seedling text-sm"></i>
+                            </div>
+                        `,
+                        iconSize: size,
+                        className: 'enhanced-marker'
+                    }),
+                    'event': L.divIcon({
+                        html: `
+                            <div style="background-color: #8B5CF6;" class="rounded-full w-9 h-9 flex items-center justify-center text-white shadow-lg border-3 border-white transform transition-transform hover:scale-110">
+                                <i class="fas fa-calendar text-sm"></i>
+                            </div>
+                        `,
+                        iconSize: size,
+                        className: 'enhanced-marker'
+                    }),
+                    'pollution': L.divIcon({
+                        html: `
+                            <div style="background-color: ${color};" class="rounded-full w-9 h-9 flex items-center justify-center text-white shadow-lg border-3 border-white transform transition-transform hover:scale-110">
+                                <i class="fas fa-smog text-sm"></i>
+                            </div>
+                        `,
+                        iconSize: size,
+                        className: 'enhanced-marker'
+                    })
+                };
+                
+                return icons[type] || icons['trash'];
+            };
+
+            // Create user and destination icons
+            const userIcon = L.divIcon({
+                html: `
+                    <div class="rounded-full w-10 h-10 flex items-center justify-center text-white shadow-lg border-3 border-white bg-blue-500 animate-pulse">
+                        <i class="fas fa-user text-sm"></i>
+                    </div>
+                `,
+                iconSize: [40, 40],
+                className: 'user-marker'
             });
 
-            const destinationIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
+            const destinationIcon = L.divIcon({
+                html: `
+                    <div class="rounded-full w-10 h-10 flex items-center justify-center text-white shadow-lg border-3 border-white bg-orange-500">
+                        <i class="fas fa-flag text-sm"></i>
+                    </div>
+                `,
+                iconSize: [40, 40],
+                className: 'destination-marker'
             });
 
-            // Function to get translated text
-            function t(key) {
-                return translations[currentLang][key] || key;
-            }
-
-            // Function to update route information display
-            function updateRouteInfo() {
-                const distanceElement = document.getElementById('route-distance');
-                const timeElement = document.getElementById('route-time');
-                
-                if (distanceElement.textContent !== 'Distance: -') {
-                    const distance = distanceElement.textContent.replace('Distance: ', '');
-                    distanceElement.textContent = t('distance').replace(': -', ': ' + distance);
+            // Initialize marker cluster
+            markersCluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50,
+                iconCreateFunction: function(cluster) {
+                    const count = cluster.getChildCount();
+                    let size = 'small';
+                    
+                    if (count > 10) size = 'medium';
+                    if (count > 30) size = 'large';
+                    
+                    return L.divIcon({
+                        html: `<div class="cluster-marker cluster-marker-${size}">${count}</div>`,
+                        className: 'marker-cluster-custom',
+                        iconSize: L.point(40, 40)
+                    });
                 }
-                
-                if (timeElement.textContent !== 'Time: -') {
-                    const time = timeElement.textContent.replace('Time: ', '');
-                    timeElement.textContent = t('time').replace(': -', ': ' + time);
-                }
-            }
+            });
 
-            // Function to update route time display
-            function updateRouteTimeDisplay(distanceKm, mode = 'car') {
-                const timeMinutes = calculateTravelTime(distanceKm, mode);
-                const formattedTime = formatTime(timeMinutes);
-                
-                document.getElementById('route-time').textContent = 
-                    `${t('time').replace(': -', '')}: ${formattedTime}`;
-            }
-            
-            // Add markers to map with before/after sliders for trash spots
-            const trashSpots = [
-                { lat: 51.1475, lng: 71.4225, title: "Park Trash Accumulation", description: "Plastic bottles and food wrappers", severity: "Medium" },
-                { lat: 51.1520, lng: 71.4380, title: "Alleyway Dumping", description: "Furniture and household waste", severity: "High" },
-                { lat: 51.1650, lng: 71.4450, title: "Riverbank Pollution", description: "Plastic bags and containers", severity: "High" },
-                { lat: 51.1800, lng: 71.4300, title: "Street Litter", description: "Cigarette butts and small trash", severity: "Low" }
-            ];
-
-            trashSpots.forEach(spot => {
-                const marker = L.marker([spot.lat, spot.lng], { 
-                    icon: createCustomIcon('trash', spot.severity.toLowerCase())
-                })
-                    .addTo(map)
-                    .bindPopup(`
-                        <b>${spot.title}</b><br>
-                        ${spot.description}<br>
-                        <span class="text-red-600">Severity: ${spot.severity}</span>
-                        
-                        <!-- Before/After slider -->
-                        <div class="before-after-container">
-                            <div class="before-image">
-                                <img src="https://via.placeholder.com/250x150/ff0000/ffffff?text=Dirty+Area" alt="Before cleanup">
-                            </div>
-                            <div class="after-image">
-                                <img src="https://via.placeholder.com/250x150/00ff00/ffffff?text=Clean+Area" alt="After cleanup">
-                            </div>
-                            <input type="range" min="0" max="100" value="50" class="slider">
+            // Function to create enhanced popup content
+            const createEnhancedPopup = (location, type) => {
+                let content = `
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-lg text-gray-800">${location.title}</h3>
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">${location.points || 50} pts</span>
                         </div>
-                        
-                        <button class="navigate-btn mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" 
-                                data-lat="${spot.lat}" data-lng="${spot.lng}">
-                            <i class="fas fa-route mr-1"></i> ${t('navigate-here')}
-                        </button>
-                    `);
-                
-                // Add event listener to the navigate button in the popup
-                marker.on('popupopen', function() {
-                    document.querySelector('.navigate-btn').addEventListener('click', function() {
-                        const lat = parseFloat(this.getAttribute('data-lat'));
-                        const lng = parseFloat(this.getAttribute('data-lng'));
-                        setDestination(lat, lng);
-                    });
-                });
-            });
+                        <p class="text-gray-600 mb-4">${location.description}</p>
+                `;
 
-            // Add other markers (cleaned areas, planting zones, events)
-            const cleanedAreas = [
-                { lat: 51.1400, lng: 71.4100, title: "Central Park Cleanup", description: "Completed June 5, 2025", volunteers: 15 },
-                { lat: 51.1550, lng: 71.4500, title: "Esil River Cleanup", description: "Completed May 28, 2025", volunteers: 22 }
+                if (location.type === 'cleanup' && location.beforeImage && location.afterImage) {
+                    content += `
+                        <div class="enhanced-before-after mb-4">
+                            <div class="before-image">
+                                <img src="${location.beforeImage}" alt="Before cleanup">
+                            </div>
+                            <div class="enhanced-after-image">
+                                <img src="${location.afterImage}" alt="After cleanup">
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="enhanced-slider">
+                        </div>
+                    `;
+                } else if (location.image) {
+                    content += `
+                        <img src="${location.image}" alt="${location.title}" class="w-full h-32 object-cover rounded-lg mb-4">
+                    `;
+                }
+
+                content += `
+                    <div class="flex space-x-2">
+                        <button class="flex-1 enhanced-btn py-2 text-sm" onclick="handleLocationAction('${type}', ${location.points || 50}, '${location.title}')">
+                            <i class="fas fa-seedling mr-1"></i> Earn Points
+                        </button>
+                        <button class="flex-1 enhanced-btn secondary py-2 text-sm navigate-to-btn" data-lat="${location.coords[0]}" data-lng="${location.coords[1]}">
+                            <i class="fas fa-route mr-1"></i> Navigate
+                        </button>
+                    </div>
+                </div>
+                `;
+
+                return content;
+            };
+
+            // Sample data for enhanced markers
+            const enhancedLocations = [
+                {
+                    coords: [51.1475, 71.4225],
+                    type: 'trash',
+                    title: 'Park Cleanup Opportunity',
+                    description: 'Help clean this beautiful park from plastic waste. Every bottle collected makes a difference!',
+                    image: 'https://images.unsplash.com/photo-1571624436279-b272aff752b5?w=300&h=200&fit=crop',
+                    points: 50,
+                    severity: 'high'
+                },
+                {
+                    coords: [51.1286, 71.4307],
+                    type: 'cleanup',
+                    title: 'Stadium Cleanup Success',
+                    description: 'This stadium area was transformed by 22 volunteers last month. See the amazing cleanup results!',
+                    beforeImage: 'https://github.com/justsummon/ecomap/blob/main/stadium_before.jpg?raw=true',
+                    afterImage: 'https://github.com/justsummon/ecomap/blob/main/stadium_after.jpg?raw=true',
+                    points: 75,
+                    severity: 'low'
+                },
+                {
+                    coords: [51.1700, 71.4250],
+                    type: 'planting',
+                    title: 'Tree Planting Zone',
+                    description: 'Perfect spot for oak trees. Join us this weekend to plant the future!',
+                    image: 'https://images.unsplash.com/photo-1574263867128-39eaed201e1c?w=300&h=200&fit=crop',
+                    points: 100,
+                    severity: 'medium'
+                },
+                {
+                    coords: [51.1550, 71.4380],
+                    type: 'event',
+                    title: 'Community Cleanup Day',
+                    description: 'Join us this Saturday for a community-wide cleanup event. All supplies provided!',
+                    image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=300&h=200&fit=crop',
+                    points: 80,
+                    severity: 'low'
+                },
+                {
+                    coords: [51.1620, 71.4450],
+                    type: 'pollution',
+                    title: 'River Pollution Alert',
+                    description: 'Reported plastic pollution in the river. Needs immediate attention.',
+                    image: 'https://images.unsplash.com/photo-1582053435146-9a6c8c7b5c0e?w=300&h=200&fit=crop',
+                    points: 60,
+                    severity: 'critical'
+                },
+                {
+                    coords: [51.1350, 71.4100],
+                    type: 'trash',
+                    title: 'Street Litter Problem',
+                    description: 'This street has accumulated significant litter. Help us clean it up!',
+                    image: 'https://images.unsplash.com/photo-1558640476-437a2e9b7a2f?w=300&h=200&fit=crop',
+                    points: 45,
+                    severity: 'medium'
+                },
+                {
+                    coords: [51.1500, 71.4600],
+                    type: 'cleanup',
+                    title: 'Beach Cleanup Area',
+                    description: 'Volunteers cleaned this beach last month. See the transformation!',
+                    beforeImage: 'https://github.com/justsummon/ecomap/blob/main/images/photo_stadium_before.jpg?raw=true',
+                    afterImage: 'https://github.com/justsummon/ecomap/blob/main/images/photo_stadium_after.jpg?raw=true',
+                    points: 70,
+                    severity: 'low'
+                },
+                {
+                    coords: [51.1420, 71.4350],
+                    type: 'planting',
+                    title: 'Urban Garden Project',
+                    description: 'Help us create an urban garden in this vacant lot. All skill levels welcome!',
+                    image: 'https://images.unsplash.com/photo-1591890479840-4639ff2c3a54?w=300&h=200&fit=crop',
+                    points: 90,
+                    severity: 'medium'
+                },
+                {
+                    coords: [51.1650, 71.4150],
+                    type: 'event',
+                    title: 'Tree Planting Event',
+                    description: 'Join us for a community tree planting event this weekend!',
+                    image: 'https://images.unsplash.com/photo-1574263867128-39eaed201e1c?w=300&h=200&fit=crop',
+                    points: 85,
+                    severity: 'low'
+                },
+                {
+                    coords: [51.1400, 71.4500],
+                    type: 'pollution',
+                    title: 'Industrial Area Pollution',
+                    description: 'Reported air pollution in the industrial area. Investigation needed.',
+                    image: 'https://images.unsplash.com/photo-1582053435146-9a6c8c7b5c0e?w=300&h=200&fit=crop',
+                    points: 55,
+                    severity: 'high'
+                }
             ];
 
-            cleanedAreas.forEach(area => {
-                const marker = L.marker([area.lat, area.lng], { 
-                    icon: createCustomIcon('cleanup')
-                })
-                    .addTo(map)
-                    .bindPopup(`
-                        <b>${area.title}</b><br>
-                        ${area.description}<br>
-                        Volunteers: ${area.volunteers}
-                        
-                        <button class="navigate-btn mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" 
-                                data-lat="${area.lat}" data-lng="${area.lng}">
-                            <i class="fas fa-route mr-1"></i> ${t('navigate-here')}
-                        </button>
-                    `);
-                
-                marker.on('popupopen', function() {
-                    document.querySelector('.navigate-btn').addEventListener('click', function() {
-                        const lat = parseFloat(this.getAttribute('data-lat'));
-                        const lng = parseFloat(this.getAttribute('data-lng'));
-                        setDestination(lat, lng);
-                    });
+            // Add enhanced markers to the map and organize by type
+            enhancedLocations.forEach(location => {
+                const marker = L.marker(location.coords, {
+                    icon: createEnhancedIcon(location.type, location.severity)
+                }).bindPopup(createEnhancedPopup(location, location.type), {
+                    className: 'enhanced-popup'
                 });
+                
+                allMarkers.push(marker);
+                markerLayers[location.type].addLayer(marker);
+                markersCluster.addLayer(marker);
             });
 
-            const plantingZones = [
-                { lat: 51.1700, lng: 71.4250, title: "Future Tree Planting", description: "50 native trees planned", date: "June 22, 2025" },
-                { lat: 51.1600, lng: 71.4400, title: "Community Garden", description: "Vegetables and flowers", date: "Ongoing" }
-            ];
-
-            plantingZones.forEach(zone => {
-                const marker = L.marker([zone.lat, zone.lng], { 
-                    icon: createCustomIcon('planting')
-                })
-                    .addTo(map)
-                    .bindPopup(`
-                        <b>${zone.title}</b><br>
-                        ${zone.description}<br>
-                        Date: ${zone.date}
-                        
-                        <button class="navigate-btn mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" 
-                                data-lat="${zone.lat}" data-lng="${zone.lng}">
-                            <i class="fas fa-route mr-1"></i> ${t('navigate-here')}
-                        </button>
-                    `);
-                
-                marker.on('popupopen', function() {
-                    document.querySelector('.navigate-btn').addEventListener('click', function() {
-                        const lat = parseFloat(this.getAttribute('data-lat'));
-                        const lng = parseFloat(this.getAttribute('data-lng'));
-                        setDestination(lat, lng);
-                    });
-                });
+            // Add all marker layers to map initially
+            Object.values(markerLayers).forEach(layer => {
+                map.addLayer(layer);
             });
 
-            const events = [
-                { lat: 51.1500, lng: 71.4350, title: "Park Cleanup Event", description: "June 15, 9AM-12PM", participants: 23 },
-                { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
-            ];
+            // Add marker cluster to map
+            map.addLayer(markersCluster);
 
-            events.forEach(event => {
-                const marker = L.marker([event.lat, event.lng], { 
-                    icon: createCustomIcon('event')
-                })
-                    .addTo(map)
-                    .bindPopup(`
-                        <b>${event.title}</b><br>
-                        ${event.description}<br>
-                        Participants: ${event.participants}
-                        
-                        <button class="navigate-btn mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition" 
-                                data-lat="${event.lat}" data-lng="${event.lng}">
-                            <i class="fas fa-route mr-1"></i> ${t('navigate-here')}
-                        </button>
-                    `);
+            // Create heatmap data
+            const heatmapData = enhancedLocations.map(location => {
+                const severityWeights = {
+                    'low': 0.3,
+                    'medium': 0.6,
+                    'high': 0.8,
+                    'critical': 1.0
+                };
                 
-                marker.on('popupopen', function() {
-                    document.querySelector('.navigate-btn').addEventListener('click', function() {
-                        const lat = parseFloat(this.getAttribute('data-lat'));
-                        const lng = parseFloat(this.getAttribute('data-lng'));
-                        setDestination(lat, lng);
-                    });
-                });
+                return [
+                    location.coords[0],
+                    location.coords[1],
+                    severityWeights[location.severity] || 0.5
+                ];
             });
 
-            // Initialize before/after sliders
-            function initSliders() {
-                document.querySelectorAll('.slider').forEach(slider => {
-                    slider.addEventListener('input', function() {
-                        const container = this.parentElement;
-                        const afterImage = container.querySelector('.after-image');
-                        afterImage.style.clipPath = `inset(0 0 0 ${this.value}%)`;
+            // Initialize heatmap layer
+            heatmapLayer = L.heatLayer(heatmapData, {
+                radius: 25,
+                blur: 15,
+                maxZoom: 17,
+                gradient: {
+                    0.2: 'blue',
+                    0.4: 'cyan',
+                    0.6: 'lime',
+                    0.8: 'yellow',
+                    1.0: 'red'
+                }
+            });
+
+            // Filter functionality
+            function updateFilters() {
+                const isClustering = document.getElementById('cluster-toggle').checked;
+                
+                // Get current filter states
+                const filterStates = {
+                    trash: document.getElementById('full-trash-spots').checked,
+                    cleanup: document.getElementById('full-cleaned-areas').checked,
+                    planting: document.getElementById('full-planting-zones').checked,
+                    pollution: document.getElementById('full-polluted-zones').checked,
+                    event: document.getElementById('full-events').checked
+                };
+                
+                if (isClustering) {
+                    // Clear cluster and re-add only filtered markers
+                    markersCluster.clearLayers();
+                    
+                    allMarkers.forEach(marker => {
+                        const markerType = getMarkerType(marker);
+                        if (filterStates[markerType]) {
+                            markersCluster.addLayer(marker);
+                        }
                     });
-                });
+                } else {
+                    // Show/hide individual layers
+                    Object.keys(markerLayers).forEach(type => {
+                        if (filterStates[type]) {
+                            map.addLayer(markerLayers[type]);
+                        } else {
+                            map.removeLayer(markerLayers[type]);
+                        }
+                    });
+                }
+                
+                // Update heatmap if enabled
+                if (document.getElementById('heatmap-toggle').checked) {
+                    const filteredHeatmapData = enhancedLocations
+                        .filter(location => filterStates[location.type])
+                        .map(location => {
+                            const severityWeights = {
+                                'low': 0.3,
+                                'medium': 0.6,
+                                'high': 0.8,
+                                'critical': 1.0
+                            };
+                            return [
+                                location.coords[0],
+                                location.coords[1],
+                                severityWeights[location.severity] || 0.5
+                            ];
+                        });
+                    
+                    heatmapLayer.setLatLngs(filteredHeatmapData);
+                }
             }
 
-            // Set destination function
-            function setDestination(lat, lng) {
-                // Remove existing destination marker
+            // Helper function to get marker type
+            function getMarkerType(marker) {
+                const latLng = marker.getLatLng();
+                const location = enhancedLocations.find(loc => 
+                    loc.coords[0] === latLng.lat && loc.coords[1] === latLng.lng
+                );
+                return location ? location.type : 'trash';
+            }
+
+            // Filter checkbox event listeners
+            document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateFilters);
+            });
+
+            // Cluster toggle functionality
+            document.getElementById('cluster-toggle').addEventListener('change', function() {
+                if (this.checked) {
+                    // Switch to clustering mode
+                    Object.values(markerLayers).forEach(layer => {
+                        map.removeLayer(layer);
+                    });
+                    map.addLayer(markersCluster);
+                } else {
+                    // Switch to individual layers mode
+                    map.removeLayer(markersCluster);
+                    updateFilters(); // This will show/hide layers based on current filters
+                }
+            });
+
+            // Heatmap toggle functionality
+            document.getElementById('heatmap-toggle').addEventListener('change', function() {
+                const legend = document.getElementById('heatmap-legend');
+                
+                if (this.checked) {
+                    map.addLayer(heatmapLayer);
+                    legend.classList.remove('hidden');
+                    updateFilters(); // Update heatmap with current filters
+                } else {
+                    map.removeLayer(heatmapLayer);
+                    legend.classList.add('hidden');
+                }
+            });
+
+            // Locate user button functionality
+            document.getElementById('locate-me-btn').addEventListener('click', function() {
+                if (!navigator.geolocation) {
+                    alert('Geolocation is not supported by your browser');
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    userLocation = [position.coords.latitude, position.coords.longitude];
+                    
+                    // Remove existing user location marker
+                    if (userLocationMarker) {
+                        map.removeLayer(userLocationMarker);
+                    }
+                    
+                    // Add user location marker
+                    userLocationMarker = L.marker(userLocation, {
+                        icon: userIcon
+                    }).addTo(map);
+                    
+                    // Center map on user location
+                    map.setView(userLocation, 15);
+                    
+                    // Add accuracy circle
+                    L.circle(userLocation, {
+                        color: '#3B82F6',
+                        fillColor: '#3B82F6',
+                        fillOpacity: 0.1,
+                        radius: position.coords.accuracy
+                    }).addTo(map);
+                    
+                }, function(error) {
+                    console.error('Error getting location:', error);
+                    alert('Unable to retrieve your location');
+                });
+            });
+
+            // Start navigation button functionality
+            document.getElementById('start-navigation-btn').addEventListener('click', function() {
+                if (!userLocation) {
+                    alert('Please locate yourself first by clicking "My Location"');
+                    return;
+                }
+                
+                // Remove existing destination marker and routing
                 if (destinationMarker) {
                     map.removeLayer(destinationMarker);
                 }
-                
-                // Add new destination marker
-                destinationMarker = L.marker([lat, lng], { icon: destinationIcon })
-                    .addTo(map)
-                    .bindPopup(t('destination'))
-                    .openPopup();
-                
-                // If user location is known, start navigation
-                if (userLocation) {
-                    startNavigation(userLocation, [lat, lng]);
-                } else {
-                    // Show route info panel
-                    document.getElementById('route-info-panel').classList.remove('hidden');
-                    document.getElementById('route-distance').textContent = `${t('distance')}`;
-                    document.getElementById('route-time').textContent = `${t('time')}`;
-                }
-            }
-
-            // Start navigation function
-            function startNavigation(start, end) {
-                // Remove existing routing control
                 if (routingControl) {
                     map.removeControl(routingControl);
                 }
                 
-                // Create new routing control
-                routingControl = L.Routing.control({
-                    waypoints: [
-                        L.latLng(start[0], start[1]),
-                        L.latLng(end[0], end[1])
-                    ],
-                    routeWhileDragging: true,
-                    lineOptions: {
-                        styles: [{color: '#16a34a', weight: 5}]
-                    },
-                    createMarker: function(i, waypoint, n) {
-                        // Use custom icons for start and end points
-                        if (i === 0) {
-                            return L.marker(waypoint.latLng, { icon: userIcon });
-                        } else {
-                            return L.marker(waypoint.latLng, { icon: destinationIcon });
-                        }
-                    },
-                    showAlternatives: false,
-                    addWaypoints: false,
-                    draggableWaypoints: false
-                }).addTo(map);
+                // Set destination to the first enhanced location for demo
+                const destination = enhancedLocations[0].coords;
                 
-                isNavigating = true;
+                // Add destination marker
+                destinationMarker = L.marker(destination, {
+                    icon: destinationIcon
+                }).addTo(map);
                 
                 // Show route info panel
                 document.getElementById('route-info-panel').classList.remove('hidden');
                 
-                // Listen for route found event
+                // Calculate and display route
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(userLocation[0], userLocation[1]),
+                        L.latLng(destination[0], destination[1])
+                    ],
+                    routeWhileDragging: true,
+                    showAlternatives: false,
+                    lineOptions: {
+                        styles: [{color: '#16a34a', weight: 6, opacity: 0.8}]
+                    },
+                    createMarker: function() { return null; }, // Don't create default markers
+                    router: L.Routing.osrmv1({
+                        serviceUrl: 'https://router.project-osrm.org/route/v1'
+                    })
+                }).addTo(map);
+                
                 routingControl.on('routesfound', function(e) {
                     const routes = e.routes;
                     const route = routes[0];
                     
                     // Update route information
-                    const distanceKm = (route.summary.totalDistance / 1000).toFixed(1);
-                    document.getElementById('route-distance').textContent = 
-                        `${t('distance').replace(': -', '')}: ${distanceKm} km`;
+                    document.getElementById('route-distance').innerHTML = `
+                        <i class="fas fa-ruler-combined mr-2 text-gray-500"></i>
+                        <span>Distance: ${(route.summary.totalDistance / 1000).toFixed(1)} km</span>
+                    `;
                     
-                    updateRouteTimeDisplay(distanceKm, currentTravelMode);
+                    const timeInMinutes = Math.round(route.summary.totalTime / 60);
+                    document.getElementById('route-time').innerHTML = `
+                        <i class="fas fa-clock mr-2 text-gray-500"></i>
+                        <span>Time: ${timeInMinutes} min</span>
+                    `;
+                    
+                    // Calculate CO2 savings based on travel mode
+                    const co2Savings = calculateCO2Savings(currentTravelMode, route.summary.totalDistance);
+                    document.getElementById('route-co2').innerHTML = `
+                        <i class="fas fa-leaf mr-2"></i>
+                        <span>CO2 Savings: ${co2Savings} kg</span>
+                    `;
                 });
-            }
+                
+                isNavigating = true;
+            });
 
-            // Clear route function
-            function clearRoute() {
+            // Clear route button functionality
+            document.getElementById('clear-route-btn').addEventListener('click', function() {
                 if (routingControl) {
                     map.removeControl(routingControl);
                     routingControl = null;
@@ -837,155 +1027,193 @@
                 
                 document.getElementById('route-info-panel').classList.add('hidden');
                 isNavigating = false;
-            }
-
-            // Function to request location permission
-            function requestLocation() {
-                if (!navigator.geolocation) {
-                    alert(t('geolocation-error'));
-                    return;
-                }
-                
-                // Ask for permission with a confirmation dialog
-                if (confirm(t('location-permission'))) {
-                    navigator.geolocation.getCurrentPosition(
-                        function(position) {
-                            userLocation = [position.coords.latitude, position.coords.longitude];
-                            
-                            // Remove existing user location marker
-                            if (userLocationMarker) {
-                                map.removeLayer(userLocationMarker);
-                            }
-                            
-                            // Add new user location marker
-                            userLocationMarker = L.marker(userLocation, { icon: userIcon })
-                                .addTo(map)
-                                .bindPopup(t('your-location'))
-                                .openPopup();
-                            
-                            // Center map on user location
-                            map.setView(userLocation, 15);
-                            
-                            // If destination is set, start navigation
-                            if (destinationMarker) {
-                                const destLatLng = destinationMarker.getLatLng();
-                                startNavigation(userLocation, [destLatLng.lat, destLatLng.lng]);
-                            }
-                        },
-                        function(error) {
-                            alert(t('location-error'));
-                        },
-                        {
-                            enableHighAccuracy: true,
-                            timeout: 5000,
-                            maximumAge: 0
-                        }
-                    );
-                }
-            }
-
-            // Request location on page load
-            requestLocation();
-
-            // Locate me button functionality
-            document.getElementById('locate-me-btn').addEventListener('click', function() {
-                requestLocation();
             });
 
-            // Start navigation button functionality
-            document.getElementById('start-navigation-btn').addEventListener('click', function() {
-                if (!destinationMarker) {
-                    alert(t('need-destination'));
-                    return;
-                }
-                
-                if (!userLocation) {
-                    // Try to get user location first
-                    requestLocation();
-                    return;
-                }
-                
-                const destLatLng = destinationMarker.getLatLng();
-                startNavigation(userLocation, [destLatLng.lat, destLatLng.lng]);
-            });
-
-            // Clear route button functionality
-            document.getElementById('clear-route-btn').addEventListener('click', function() {
-                clearRoute();
-            });
-
-            // Transport mode selection
+            // Transport mode buttons
             document.querySelectorAll('.transport-mode-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    // Update active state
+                    // Remove active class from all buttons
                     document.querySelectorAll('.transport-mode-btn').forEach(b => {
                         b.classList.remove('active');
                     });
+                    
+                    // Add active class to clicked button
                     this.classList.add('active');
                     
                     // Update current travel mode
                     currentTravelMode = this.getAttribute('data-mode');
                     
-                    // If navigating, update route time
+                    // If navigating, recalculate route
                     if (isNavigating && routingControl) {
-                        const distanceElement = document.getElementById('route-distance');
-                        if (distanceElement.textContent !== 'Distance: -') {
-                            const distanceKm = parseFloat(distanceElement.textContent.replace('Distance: ', '').replace(' km', ''));
-                            updateRouteTimeDisplay(distanceKm, currentTravelMode);
-                        }
+                        // This would recalculate the route with the new travel mode
+                        // For demo purposes, we'll just update the CO2 savings
+                        const distance = 5.2; // Example distance in km
+                        const co2Savings = calculateCO2Savings(currentTravelMode, distance * 1000);
+                        document.getElementById('route-co2').innerHTML = `
+                            <i class="fas fa-leaf mr-2"></i>
+                            <span>CO2 Savings: ${co2Savings} kg</span>
+                        `;
                     }
                 });
             });
 
-            // Language toggle functionality
-            document.getElementById('language-toggle').addEventListener('click', function() {
-                const dropdown = document.getElementById('language-dropdown');
-                dropdown.classList.toggle('hidden');
-            });
-
-            document.querySelectorAll('#language-dropdown button').forEach(button => {
-                button.addEventListener('click', function() {
-                    const lang = this.getAttribute('data-lang');
-                    currentLang = lang;
-                    document.getElementById('current-language').textContent = 
-                        lang === 'en' ? 'EN' : lang === 'ru' ? 'RU' : 'KZ';
-                    document.getElementById('language-dropdown').classList.add('hidden');
-                    translateText();
-                });
-            });
-
-            // Initialize sliders and translations
-            initSliders();
-            translateText();
-
-            // Close language dropdown when clicking outside
-            document.addEventListener('click', function(event) {
-                const languageToggle = document.getElementById('language-toggle');
-                const languageDropdown = document.getElementById('language-dropdown');
-                
-                if (!languageToggle.contains(event.target) && !languageDropdown.contains(event.target)) {
-                    languageDropdown.classList.add('hidden');
+            // Navigate to location buttons in popups
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('navigate-to-btn') || 
+                    e.target.closest('.navigate-to-btn')) {
+                    
+                    const btn = e.target.classList.contains('navigate-to-btn') ? 
+                        e.target : e.target.closest('.navigate-to-btn');
+                    
+                    const lat = parseFloat(btn.getAttribute('data-lat'));
+                    const lng = parseFloat(btn.getAttribute('data-lng'));
+                    
+                    // Set destination
+                    if (destinationMarker) {
+                        map.removeLayer(destinationMarker);
+                    }
+                    
+                    destinationMarker = L.marker([lat, lng], {
+                        icon: destinationIcon
+                    }).addTo(map);
+                    
+                    // Show route info panel
+                    document.getElementById('route-info-panel').classList.remove('hidden');
+                    
+                    // If user location is known, calculate route
+                    if (userLocation) {
+                        if (routingControl) {
+                            map.removeControl(routingControl);
+                        }
+                        
+                        routingControl = L.Routing.control({
+                            waypoints: [
+                                L.latLng(userLocation[0], userLocation[1]),
+                                L.latLng(lat, lng)
+                            ],
+                            routeWhileDragging: true,
+                            showAlternatives: false,
+                            lineOptions: {
+                                styles: [{color: '#16a34a', weight: 6, opacity: 0.8}]
+                            },
+                            createMarker: function() { return null; },
+                            router: L.Routing.osrmv1({
+                                serviceUrl: 'https://router.project-osrm.org/route/v1'
+                            })
+                        }).addTo(map);
+                        
+                        routingControl.on('routesfound', function(e) {
+                            const routes = e.routes;
+                            const route = routes[0];
+                            
+                            document.getElementById('route-distance').innerHTML = `
+                                <i class="fas fa-ruler-combined mr-2 text-gray-500"></i>
+                                <span>Distance: ${(route.summary.totalDistance / 1000).toFixed(1)} km</span>
+                            `;
+                            
+                            const timeInMinutes = Math.round(route.summary.totalTime / 60);
+                            document.getElementById('route-time').innerHTML = `
+                                <i class="fas fa-clock mr-2 text-gray-500"></i>
+                                <span>Time: ${timeInMinutes} min</span>
+                            `;
+                            
+                            const co2Savings = calculateCO2Savings(currentTravelMode, route.summary.totalDistance);
+                            document.getElementById('route-co2').innerHTML = `
+                                <i class="fas fa-leaf mr-2"></i>
+                                <span>CO2 Savings: ${co2Savings} kg</span>
+                            `;
+                        });
+                        
+                        isNavigating = true;
+                    } else {
+                        alert('Please locate yourself first by clicking "My Location"');
+                    }
                 }
+            });
+
+            // Filter toggle functionality
+            document.getElementById('filters-toggle').addEventListener('click', function() {
+                const content = document.getElementById('filters-content');
+                const arrow = document.getElementById('filters-arrow');
+                
+                content.classList.toggle('expanded');
+                arrow.classList.toggle('fa-chevron-down');
+                arrow.classList.toggle('fa-chevron-up');
             });
 
             // Mobile menu toggle
             document.getElementById('menu-toggle').addEventListener('click', function() {
-                const navMenu = document.getElementById('nav-menu');
-                navMenu.classList.toggle('hidden');
-                navMenu.classList.toggle('flex');
+                document.getElementById('nav-menu').classList.toggle('hidden');
             });
 
-            // Принудительно обновляем размер карты после загрузки
-            setTimeout(() => {
-                map.invalidateSize();
-            }, 100);
-
-            // Добавляем обработчик для ресайза окна
-            window.addEventListener('resize', function() {
-                setTimeout(() => {
-                    map.invalidateSize();
-                }, 100);
+            // Language toggle functionality
+            document.getElementById('language-toggle').addEventListener('click', function() {
+                document.getElementById('language-dropdown').classList.toggle('hidden');
             });
+
+            // Close language dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#language-toggle') && !e.target.closest('#language-dropdown')) {
+                    document.getElementById('language-dropdown').classList.add('hidden');
+                }
+            });
+
+            // Language selection
+            document.querySelectorAll('#language-dropdown button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const lang = this.getAttribute('data-lang');
+                    document.getElementById('current-language').textContent = 
+                        lang === 'en' ? 'EN' : lang === 'ru' ? 'RU' : 'KZ';
+                    document.getElementById('language-dropdown').classList.add('hidden');
+                    // This would trigger language change throughout the app
+                    console.log(`Language changed to ${lang}`);
+                });
+            });
+
+            // Initialize before/after sliders
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.enhanced-slider').forEach(slider => {
+                    slider.addEventListener('input', function() {
+                        const container = this.closest('.enhanced-before-after');
+                        const afterImage = container.querySelector('.enhanced-after-image');
+                        afterImage.style.clipPath = `inset(0 0 0 ${this.value}%)`;
+                    });
+                });
+            });
+
+            // Helper function to calculate CO2 savings
+            function calculateCO2Savings(mode, distanceMeters) {
+                const distanceKm = distanceMeters / 1000;
+                let savings = 0;
+                
+                // CO2 emissions in kg per km
+                const emissions = {
+                    'car': 0.21,
+                    'bike': 0,
+                    'walk': 0
+                };
+                
+                // Calculate savings compared to car
+                if (mode !== 'car') {
+                    savings = emissions['car'] * distanceKm;
+                }
+                
+                return savings.toFixed(2);
+            }
+
+            // Function to handle location actions (earn points)
+            window.handleLocationAction = function(type, points, title) {
+                // Update user points
+                const pointsElement = document.querySelector('#user-points span');
+                const currentPoints = parseInt(pointsElement.textContent);
+                pointsElement.textContent = currentPoints + points;
+                
+                // Show success message
+                alert(`Congratulations! You earned ${points} points for ${title}`);
+                
+                // This would typically make an API call to update user points
+                console.log(`User earned ${points} points for ${type}: ${title}`);
+            };
         });
     </script>
 </body>
