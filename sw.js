@@ -1,0 +1,248 @@
+/* Существующие стили */
+#map { 
+    height: 500px !important; 
+    width: 100% !important;
+    border-radius: 8px;
+    z-index: 1;
+}
+.eco-card:hover { transform: translateY(-5px); }
+.progress-bar { transition: width 0.5s ease-in-out; }
+.video-container { padding-bottom: 56.25%; position: relative; }
+.video-container > div { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.marker-cluster-small { background-color: rgba(110, 204, 57, 0.6); }
+.marker-cluster-medium { background-color: rgba(240, 194, 12, 0.6); }
+.marker-cluster-large { background-color: rgba(241, 128, 23, 0.6); }
+.marker-cluster-cleaned { background-color: rgba(23, 162, 184, 0.6); }
+.eco-pin{
+  display:grid; place-items:center;
+  width:28px; height:28px; border-radius:50%;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);
+  border:2px solid rgba(255,255,255,.9);
+  font-size:14px; color:#fff;
+}
+.eco-pin--trash    { background:#ef4444; }  /* red */
+.eco-pin--cleaned  { background:#10b981; }  /* green */
+.eco-pin--recycling{ background:#3b82f6; }  /* blue */
+.eco-pin--hazard   { background:#f59e0b; }  /* yellow */
+.eco-pin--other    { background:#8b5cf6; }  /* purple */
+
+.before-after-container {
+  position: relative;
+  width: 250px;
+  height: 150px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin: 10px 0;
+  border: 2px solid #e5e7eb;
+}
+.before-after-container img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.after-image {
+  clip-path: inset(0 0 0 50%);
+}
+.slider {
+  position: absolute;
+  bottom: 10px; left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 15px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  -webkit-appearance: none;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #16a34a;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #16a34a;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Стили для системы отчетов */
+.report-button-container {
+    margin-bottom: 10px;
+}
+
+.report-marker {
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.report-popup {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.report-popup h4 {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.report-popup .status-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Стили для кастомных маркеров */
+.custom-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
+.eco-yard-marker {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    border: 3px solid white;
+    transition: all 0.3s ease;
+}
+
+.eco-yard-marker:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* Стили для полноэкранной карты в map.html */
+#fullscreen-map {
+    height: calc(100vh - 80px) !important;
+    width: 100% !important;
+    position: fixed !important;
+    top: 80px !important;
+    left: 0 !important;
+    z-index: 5 !important;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    #map {
+        height: 400px !important;
+    }
+    
+    #fullscreen-map {
+        height: calc(100vh - 60px) !important;
+        top: 60px !important;
+    }
+    
+    .report-button-container button {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .report-popup {
+        max-width: 250px;
+    }
+    
+    .navigation-controls,
+    .route-info-panel,
+    .map-controls {
+        width: 200px !important;
+        padding: 10px !important;
+    }
+    
+    .before-after-container {
+        width: 200px;
+        height: 120px;
+    }
+}
+
+/* Стили для элементов управления на карте */
+.navigation-controls,
+.route-info-panel,
+.map-controls {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для попапов */
+.leaflet-popup-content {
+    margin: 8px 12px !important;
+    line-height: 1.4 !important;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* Стили для страницы отчетов */
+.issue-type-card {
+    transition: all 0.3s ease;
+}
+
+.issue-type-card:hover {
+    transform: translateY(-2px);
+}
+
+.photo-preview {
+    transition: all 0.3s ease;
+}
+
+.photo-preview:hover {
+    transform: scale(1.05);
+}
+
+.remove-photo {
+    transition: all 0.3s ease;
+}
+
+.remove-photo:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* Стили для модальных окон */
+.modal {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Стили для индикатора шагов */
+.step-indicator {
+    position: relative;
+}
+
+.step-indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e5e7eb;
+    z-index: -1;
+}
+
+.step {
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.step.active {
+    transform: scale(1.1);
+}
+
+.step.completed {
+    transform: scale(1.05);
+}
