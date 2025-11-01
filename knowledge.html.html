@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoYard - Eco Knowledge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-green-50">
+    <!-- Header -->
+    <header class="bg-green-600 text-white shadow-lg fixed w-full top-0 z-10">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center justify-between w-full md:w-auto">
+                    <div class="flex items-center mb-4 md:mb-0">
+                        <img src="https://github.com/justsummon/ecomap/blob/main/EcoYardlogo.png?raw=true" alt="EcoMap Logo" class="h-8 mr-3">
+                        <h1 class="text-2xl font-bold">EcoYard</h1>
+                    </div>
+                    <button class="md:hidden text-white focus:outline-none" id="menu-toggle">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+                <nav id="nav-menu" class="flex-col md:flex-row flex space-y-2 md:space-y-0 md:space-x-6 hidden md:flex mt-4 md:mt-0 w-full md:w-auto">
+                    <a href="index.html" class="px-3 py-2 rounded hover:bg-green-700 transition" data-translate="home">Home</a>
+                    <a href="rewards.html" class="px-3 py-2 rounded hover:bg-green-700 transition" data-translate="rewards">Rewards</a>
+                    <a href="knowledge.html" class="px-3 py-2 rounded hover:bg-green-700 transition" data-translate="knowledge">Eco-Knowledge</a>
+                    <a href="community.html" class="px-3 py-2 rounded hover:bg-green-700 transition" data-translate="community">Community</a>
+                </nav>
+                <div class="flex items-center mt-4 md:mt-0">
+                    <div id="user-points" class="bg-green-800 px-4 py-2 rounded-full font-semibold mr-4">
+                        <i class="fas fa-coins mr-2"></i><span>0</span> pts
+                    </div>
+                    <button id="login-btn" class="bg-white text-green-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition" data-translate="signin">
+                        Sign In
+                    </button>
+                    <div class="ml-4 relative">
+                        <button id="language-toggle" class="flex items-center text-white">
+                            <i class="fas fa-globe mr-2"></i>
+                            <span id="current-language">EN</span>
+                        </button>
+                        <div id="language-dropdown" class="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg hidden z-20">
+                            <button data-lang="en" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-100">English</button>
+                            <button data-lang="ru" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Русский</button>
+                            <button data-lang="kz" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Қазақша</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Eco Knowledge Section -->
+    <section id="knowledge" class="py-16 bg-white pt-32">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-green-800" data-translate="knowledge-hub">Eco Knowledge Hub</h2>
+            
+            <!-- Daily Challenge -->
+            <div class="bg-green-50 p-6 rounded-lg shadow-md mb-12">
+                <h3 class="text-xl font-semibold mb-4 text-green-800 flex items-center">
+                    <i class="fas fa-calendar-day mr-3"></i> <span data-translate="todays-challenge">Today's Eco Challenge</span>
+                </h3>
+                <div class="flex flex-col md:flex-row items-center">
+                    <div class="w-full md:w-1/3 mb-4 md:mb-0">
+                        <div class="bg-green-100 p-4 rounded-lg text-center">
+                            <i class="fas fa-recycle text-5xl text-green-600 mb-3"></i>
+                            <p class="font-bold text-green-800">+25 points</p>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-2/3 md:pl-6">
+                        <h4 class="text-lg font-semibold mb-2">Refuse Single-Use Plastic</h4>
+                        <p class="text-gray-600 mb-4">Today's challenge is to refuse at least one single-use plastic item. This could be a straw, bag, or water bottle. Choose reusable alternatives instead!</p>
+                        <button class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+                            <i class="fas fa-check-circle mr-2"></i> <span data-translate="mark-complete">Mark as Complete</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Eco Facts Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <!-- Card 1 -->
+                <div class="bg-green-50 p-6 rounded-lg shadow-md eco-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-green-600 text-white p-3 rounded-full mr-4">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold" data-translate="energy-saving">Energy Saving</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Turning off lights when not in use can save up to 15% of your electricity bill. LED bulbs use 75% less energy than incandescent bulbs.</p>
+                    <button class="text-green-600 font-semibold hover:underline" data-translate="learn-more">Learn more →</button>
+                </div>
+                
+                <!-- Card 2 -->
+                <div class="bg-green-50 p-6 rounded-lg shadow-md eco-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-green-600 text-white p-3 rounded-full mr-4">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold" data-translate="water-conservation">Water Conservation</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">A leaky faucet dripping once per second wastes more than 3,000 gallons per year. Fixing leaks can save enough water for 180 showers!</p>
+                    <button class="text-green-600 font-semibold hover:underline" data-translate="learn-more">Learn more →</button>
+                </div>
+                
+                <!-- Card 3 -->
+                <div class="bg-green-50 p-6 rounded-lg shadow-md eco-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-green-600 text-white p-3 rounded-full mr-4">
+                            <i class="fas fa-recycle"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold" data-translate="recycling-facts">Recycling Facts</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Recycling one aluminum can saves enough energy to run a TV for 3 hours. Paper recycling saves 60% energy compared to making paper from raw materials.</p>
+                    <button class="text-green-600 font-semibold hover:underline" data-translate="learn-more">Learn more →</button>
+                </div>
+            </div>
+            
+            <!-- Quick Eco Lessons -->
+            <h3 class="text-xl font-semibold mb-6 text-green-800" data-translate="quick-eco-lessons">Quick Eco Lessons</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                <!-- Video 1 -->
+                <div class="bg-gray-100 rounded-lg overflow-hidden shadow-md">
+                    <div class="video-container relative">
+                        <div class="absolute inset-0 bg-green-600 flex items-center justify-center">
+                            <i class="fas fa-play text-white text-4xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-semibold mb-2">5 Easy Zero Waste Switches</h4>
+                        <p class="text-gray-600 text-sm">2:45 min • 15,000 views</p>
+                    </div>
+                </div>
+                
+                <!-- Video 2 -->
+                <div class="bg-gray-100 rounded-lg overflow-hidden shadow-md">
+                    <div class="video-container relative">
+                        <div class="absolute inset-0 bg-green-600 flex items-center justify-center">
+                            <i class="fas fa-play text-white text-4xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-semibold mb-2">Composting for Beginners</h4>
+                        <p class="text-gray-600 text-sm">4:12 min • 8,200 views</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quiz Section -->
+            <div class="mt-12 bg-green-50 p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold mb-4 text-green-800" data-translate="test-knowledge">Test Your Eco Knowledge</h3>
+                <div id="quiz-container">
+                    <div class="mb-4">
+                        <p class="font-medium mb-2">What percentage of plastic waste is actually recycled globally?</p>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="quiz" class="mr-2"> 9%
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="quiz" class="mr-2"> 25%
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="quiz" class="mr-2"> 50%
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="quiz" class="mr-2"> 75%
+                            </label>
+                        </div>
+                    </div>
+                    <button class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+                        <span data-translate="submit-answer">Submit Answer</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-6 right-6 bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-700 transition hidden">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Footer -->
+    <footer class="bg-green-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">EcoYard</h3>
+                    <p class="text-green-200" data-translate="footer-tagline">Connecting communities for a cleaner, greener planet.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-translate="quick-links">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="about-us">About Us</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="how-it-works">How It Works</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="success-stories">Success Stories</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="get-involved">Get Involved</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-translate="resources">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="knowledge.html" class="text-green-200 hover:text-white transition" data-translate="eco-tips">Eco Tips</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="recycling-guide">Recycling Guide</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="volunteer-handbook">Volunteer Handbook</a></li>
+                        <li><a href="#" class="text-green-200 hover:text-white transition" data-translate="partner-with-us">Partner With Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-translate="connect">Connect</h4>
+                    <div class="flex space-x-4 mb-4">
+                        <a href="#" class="text-green-200 hover:text-white text-xl transition"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-green-200 hover:text-white text-xl transition"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-green-200 hover:text-white text-xl transition"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-green-200 hover:text-white text-xl transition"><i class="fab fa-youtube"></i></a>
+                    </div>
+                    <p class="text-green-200" data-translate="subscribe-newsletter">Subscribe to our newsletter</p>
+                    <div class="mt-2 flex">
+                        <input type="email" data-translate-placeholder="your-email" placeholder="Your email" class="px-3 py-2 rounded-l text-gray-800 w-full">
+                        <button class="bg-green-600 px-4 py-2 rounded-r hover:bg-green-700 transition">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <hr class="border-green-700 my-8">
+            <div class="text-center text-green-200 text-sm">
+                <p>© 2025 EcoYard. All rights reserved. | <a href="#" class="hover:text-white transition" data-translate="privacy-policy">Privacy Policy</a> | <a href="#" class="hover:text-white transition" data-translate="terms-of-service">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

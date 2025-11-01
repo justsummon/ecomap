@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoYard - Report Environmental Issue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            font-weight: bold;
+            color: #6b7280;
+        }
+        .step.active {
+            background: #16a34a;
+            color: white;
+        }
+        .step.completed {
+            background: #22c55e;
+            color: white;
+        }
+        .form-step {
+            display: none;
+        }
+        .form-step.active {
+            display: block;
+        }
+        .issue-preview-card {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .photo-preview {
+            position: relative;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+        .photo-preview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .remove-photo {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+    </style>
+
+</head>
+<body class="bg-green-50 min-h-screen">
+    <header class="bg-green-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <img src="https://github.com/justsummon/ecomap/blob/main/EcoYardlogo.png?raw=true" alt="EcoYard Logo" class="h-8 mr-3">
+                    <h1 class="text-xl font-bold">EcoYard - Report Issue</h1>
+                </div>
+                <nav class="hidden md:flex space-x-4">
+                    <a href="index.html" class="px-3 py-2 rounded hover:bg-green-700 transition">Home</a>
+                    <a href="map.html" class="px-3 py-2 rounded hover:bg-green-700 transition">Map</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Report Issue Form -->
+    <section class="container mx-auto py-8 px-4">
+        <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-3xl font-bold text-center mb-8 text-green-800">Report Environmental Issue</h2>
+            
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step-1">1</div>
+                <div class="step" id="step-2">2</div>
+                <div class="step" id="step-3">3</div>
+                <div class="step" id="step-4">4</div>
+            </div>
+
+            <!-- Step 1: Issue Type -->
+            <div class="form-step active" id="step-1-form">
+                <h3 class="text-xl font-semibold mb-6 text-green-800">What type of issue are you reporting?</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="issue-type-card p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-500 transition" data-type="trash">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-trash text-red-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Trash Accumulation</h4>
+                                <p class="text-sm text-gray-600">Illegal dumping, littering, waste piles</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="issue-type-card p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-500 transition" data-type="pollution">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-smog text-yellow-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Air/Water Pollution</h4>
+                                <p class="text-sm text-gray-600">Smoke, chemical spills, water contamination</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="issue-type-card p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-500 transition" data-type="damage">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-tree text-orange-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Environmental Damage</h4>
+                                <p class="text-sm text-gray-600">Deforestation, soil erosion, habitat destruction</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="issue-type-card p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-500 transition" data-type="other">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-exclamation-triangle text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Other Issue</h4>
+                                <p class="text-sm text-gray-600">Any other environmental concern</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex justify-end">
+                    <button class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition" onclick="nextStep(2)">
+                        Next <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Location -->
+            <div class="form-step" id="step-2-form">
+                <h3 class="text-xl font-semibold mb-6 text-green-800">Where is the issue located?</h3>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Search for location or click on the map:</label>
+                    <div class="flex">
+                        <input type="text" id="location-search" class="flex-grow p-3 border border-gray-300 rounded-l-lg" placeholder="Enter address or landmark">
+                        <button class="bg-green-600 text-white px-4 rounded-r-lg hover:bg-green-700 transition" onclick="searchLocation()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="location-map" class="h-64 rounded-lg mb-4 border-2 border-gray-300"></div>
+                
+                <div class="bg-green-50 p-4 rounded-lg mb-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-info-circle text-green-600 mr-2"></i>
+                        <span class="text-sm text-green-800">Selected Location:</span>
+                    </div>
+                    <div id="selected-location" class="text-sm text-gray-600 mt-1">Click on the map to select location</div>
+                </div>
+                
+                <div class="flex justify-between mt-8">
+                    <button class="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-400 transition" onclick="prevStep(1)">
+                        <i class="fas fa-arrow-left mr-2"></i> Back
+                    </button>
+                    <button class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition" onclick="nextStep(3)">
+                        Next <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Details -->
+            <div class="form-step" id="step-3-form">
+                <h3 class="text-xl font-semibold mb-6 text-green-800">Provide details about the issue</h3>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Title</label>
+                    <input type="text" id="issue-title" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Brief description of the issue">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Detailed Description</label>
+                    <textarea id="issue-description" class="w-full p-3 border border-gray-300 rounded-lg h-32" placeholder="Describe what you observed, when you noticed it, and any other relevant details"></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Severity Level</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="severity" value="low" class="mr-2">
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded">Low</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="severity" value="medium" class="mr-2" checked>
+                            <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded">Medium</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="severity" value="high" class="mr-2">
+                            <span class="bg-orange-100 text-orange-800 px-3 py-1 rounded">High</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="severity" value="critical" class="mr-2">
+                            <span class="bg-red-100 text-red-800 px-3 py-1 rounded">Critical</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Upload Photos (Optional)</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <input type="file" id="photo-upload" multiple accept="image/*" class="hidden">
+                        <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-600">Click to upload photos or drag and drop</p>
+                        <button class="bg-green-600 text-white px-4 py-2 rounded-lg mt-2 hover:bg-green-700 transition" onclick="document.getElementById('photo-upload').click()">
+                            Select Photos
+                        </button>
+                    </div>
+                    <div id="photo-preview" class="mt-4"></div>
+                </div>
+                
+                <div class="flex justify-between mt-8">
+                    <button class="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-400 transition" onclick="prevStep(2)">
+                        <i class="fas fa-arrow-left mr-2"></i> Back
+                    </button>
+                    <button class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition" onclick="nextStep(4)">
+                        Next <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Review & Submit -->
+            <div class="form-step" id="step-4-form">
+                <h3 class="text-xl font-semibold mb-6 text-green-800">Review and Submit Your Report</h3>
+                
+                <div class="issue-preview-card">
+                    <h4 class="font-semibold mb-4">Issue Preview</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <strong>Type:</strong> <span id="preview-type">-</span>
+                        </div>
+                        <div>
+                            <strong>Severity:</strong> <span id="preview-severity">-</span>
+                        </div>
+                        <div>
+                            <strong>Title:</strong> <span id="preview-title">-</span>
+                        </div>
+                        <div>
+                            <strong>Location:</strong> <span id="preview-location">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <strong>Description:</strong>
+                        <p id="preview-description" class="text-gray-600 mt-1">-</p>
+                    </div>
+                    
+                    <div id="preview-photos" class="mt-4">
+                        <strong>Photos:</strong>
+                        <div class="flex flex-wrap mt-2" id="preview-photos-container"></div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-lightbulb text-blue-600 mr-2"></i>
+                        <span class="font-semibold text-blue-800">Submission Rewards</span>
+                    </div>
+                    <p class="text-sm text-blue-700 mt-1">
+                        After verification, you'll earn <strong>25 EcoPoints</strong> for reporting this issue!
+                    </p>
+                </div>
+                
+                <div class="flex justify-between mt-8">
+                    <button class="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-400 transition" onclick="prevStep(3)">
+                        <i class="fas fa-arrow-left mr-2"></i> Back
+                    </button>
+                    <button class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition" onclick="submitReport()">
+                        <i class="fas fa-paper-plane mr-2"></i> Submit Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-md mx-4 text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check text-green-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Report Submitted!</h3>
+            <p class="text-gray-600 mb-4">Thank you for helping keep our environment clean. Your report has been submitted for review.</p>
+            <div class="bg-green-50 p-3 rounded-lg mb-4">
+                <p class="text-sm text-green-700">
+                    <i class="fas fa-coins mr-1"></i>
+                    <strong>+25 EcoPoints</strong> will be awarded after verification
+                </p>
+            </div>
+            <div class="flex space-x-3">
+                <button class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400 transition" onclick="window.location.href='index.html'">
+                    Go Home
+                </button>
+                <button class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition" onclick="window.location.href='map.html'">
+                    View Map
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentStep = 1;
+        let selectedIssueType = '';
+        let selectedLocation = null;
+        let uploadedPhotos = [];
+        let map;
+        let marker;
+
+        // Initialize map for step 2
+        function initMap() {
+            map = L.map('location-map').setView([51.1605, 71.4704], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Add click event to map
+            map.on('click', function(e) {
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                
+                marker = L.marker(e.latlng).addTo(map)
+                    .bindPopup('Selected Location')
+                    .openPopup();
+                
+                selectedLocation = e.latlng;
+                updateLocationDisplay();
+            });
+        }
+
+        // Update location display
+        function updateLocationDisplay() {
+            if (selectedLocation) {
+                document.getElementById('selected-location').textContent = 
+                    `Lat: ${selectedLocation.lat.toFixed(4)}, Lng: ${selectedLocation.lng.toFixed(4)}`;
+            }
+        }
+
+        // Search location function
+        function searchLocation() {
+            const query = document.getElementById('location-search').value;
+            if (!query) return;
+            
+            // Simple geocoding simulation (in real app, use a geocoding service)
+            alert(`Searching for: ${query}\n\nIn a real application, this would connect to a geocoding service like Nominatim or Google Maps Geocoding API.`);
+        }
+
+        // Step navigation
+        function nextStep(step) {
+            // Validate current step before proceeding
+            if (!validateStep(currentStep)) {
+                return;
+            }
+            
+            document.getElementById(`step-${currentStep}`).classList.remove('active');
+            document.getElementById(`step-${currentStep}-form`).classList.remove('active');
+            
+            document.getElementById(`step-${step}`).classList.add('active');
+            document.getElementById(`step-${step}-form`).classList.add('active');
+            
+            currentStep = step;
+            
+            // Initialize map when reaching step 2
+            if (step === 2 && !map) {
+                initMap();
+            }
+            
+            // Update preview when reaching step 4
+            if (step === 4) {
+                updatePreview();
+            }
+        }
+
+        function prevStep(step) {
+            document.getElementById(`step-${currentStep}`).classList.remove('active');
+            document.getElementById(`step-${currentStep}-form`).classList.remove('active');
+            
+            document.getElementById(`step-${step}`).classList.add('active');
+            document.getElementById(`step-${step}-form`).classList.add('active');
+            
+            currentStep = step;
+        }
+
+        // Step validation
+        function validateStep(step) {
+            switch(step) {
+                case 1:
+                    if (!selectedIssueType) {
+                        alert('Please select an issue type');
+                        return false;
+                    }
+                    break;
+                case 2:
+                    if (!selectedLocation) {
+                        alert('Please select a location on the map');
+                        return false;
+                    }
+                    break;
+                case 3:
+                    const title = document.getElementById('issue-title').value;
+                    const description = document.getElementById('issue-description').value;
+                    
+                    if (!title.trim()) {
+                        alert('Please provide a title for the issue');
+                        return false;
+                    }
+                    
+                    if (!description.trim()) {
+                        alert('Please provide a description of the issue');
+                        return false;
+                    }
+                    break;
+            }
+            return true;
+        }
+
+        // Update preview in step 4
+        function updatePreview() {
+            document.getElementById('preview-type').textContent = 
+                selectedIssueType.charAt(0).toUpperCase() + selectedIssueType.slice(1);
+            
+            const severity = document.querySelector('input[name="severity"]:checked');
+            document.getElementById('preview-severity').textContent = 
+                severity ? severity.value.charAt(0).toUpperCase() + severity.value.slice(1) : '-';
+            
+            document.getElementById('preview-title').textContent = 
+                document.getElementById('issue-title').value || '-';
+            
+            document.getElementById('preview-location').textContent = 
+                selectedLocation ? `Lat: ${selectedLocation.lat.toFixed(4)}, Lng: ${selectedLocation.lng.toFixed(4)}` : '-';
+            
+            document.getElementById('preview-description').textContent = 
+                document.getElementById('issue-description').value || '-';
+            
+            // Update photos preview
+            const photosContainer = document.getElementById('preview-photos-container');
+            photosContainer.innerHTML = '';
+            
+            if (uploadedPhotos.length > 0) {
+                uploadedPhotos.forEach((photo, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'w-20 h-20 object-cover rounded m-1';
+                        photosContainer.appendChild(img);
+                    };
+                    reader.readAsDataURL(photo);
+                });
+            } else {
+                document.getElementById('preview-photos').classList.add('hidden');
+            }
+        }
+
+        // Submit report
+        function submitReport() {
+            // In a real application, this would send data to a server
+            const reportData = {
+                type: selectedIssueType,
+                location: selectedLocation,
+                title: document.getElementById('issue-title').value,
+                description: document.getElementById('issue-description').value,
+                severity: document.querySelector('input[name="severity"]:checked').value,
+                photos: uploadedPhotos.length,
+                timestamp: new Date().toISOString(),
+                status: 'pending'
+            };
+            
+            // Save to localStorage (in real app, send to backend)
+            const reports = JSON.parse(localStorage.getItem('ecoMapReports') || '[]');
+            reports.push(reportData);
+            localStorage.setItem('ecoMapReports', JSON.stringify(reports));
+            
+            // Show success modal
+            document.getElementById('success-modal').classList.remove('hidden');
+        }
+
+        // Event listeners when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Issue type selection
+            document.querySelectorAll('.issue-type-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.issue-type-card').forEach(c => {
+                        c.classList.remove('border-green-500', 'bg-green-50');
+                    });
+                    this.classList.add('border-green-500', 'bg-green-50');
+                    selectedIssueType = this.getAttribute('data-type');
+                });
+            });
+            
+            // Photo upload handling
+            document.getElementById('photo-upload').addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                uploadedPhotos = [...uploadedPhotos, ...files];
+                updatePhotoPreview();
+            });
+        });
+
+        // Update photo preview
+        function updatePhotoPreview() {
+            const container = document.getElementById('photo-preview');
+            container.innerHTML = '';
+            
+            uploadedPhotos.forEach((photo, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.createElement('div');
+                    preview.className = 'photo-preview';
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <div class="remove-photo" onclick="removePhoto(${index})">
+                            <i class="fas fa-times"></i>
+                        </div>
+                    `;
+                    container.appendChild(preview);
+                };
+                reader.readAsDataURL(photo);
+            });
+        }
+
+        // Remove photo
+        function removePhoto(index) {
+            uploadedPhotos.splice(index, 1);
+            updatePhotoPreview();
+        }
+    </script>
+</body>
+</html>

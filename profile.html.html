@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoYard - Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .slide-up { animation: slideUp 0.5s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .btn-transition { transition: all 0.3s ease; }
+        .btn-transition:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        
+        /* Стили для переключения между логином и регистрацией */
+        .auth-tab { cursor: pointer; padding: 12px 24px; border-bottom: 3px solid transparent; }
+        .auth-tab.active { border-bottom-color: #16a34a; font-weight: bold; }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+        
+        /* Стили для страницы профиля */
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .profile-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+        .badge {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+        .badge.locked {
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        /* Новые стили для системы уведомлений */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            max-width: 320px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.success { background: #10b981; }
+        .notification.error { background: #ef4444; }
+        .notification.warning { background: #f59e0b; }
+        .notification.info { background: #3b82f6; }
+
+        /* Стили для достижений */
+        .achievement-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .achievement-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .achievement-card.locked {
+            filter: grayscale(1);
+            opacity: 0.7;
+        }
+
+        /* Анимации для прогресс-баров */
+        .progress-bar {
+            transition: width 0.8s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-green-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-green-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <img src="https://github.com/justsummon/ecomap/blob/main/EcoYardlogo.png?raw=true" alt="EcoMap Logo" class="h-8 mr-3">
+                    <h1 class="text-2xl font-bold">EcoYard</h1>
+                </div>
+                <nav class="hidden md:flex space-x-4">
+                    <a href="index.html" class="px-3 py-2 rounded hover:bg-green-700 transition">Home</a>
+                    <a href="rewards.html" class="px-3 py-2 rounded hover:bg-green-700 transition">Rewards</a>
+                    <a href="knowledge.html" class="px-3 py-2 rounded hover:bg-green-700 transition">Eco-Knowledge</a>
+                    <a href="community.html" class="px-3 py-2 rounded hover:bg-green-700 transition">Community</a>
+                </nav>
+                <div class="flex items-center">
+                    <div class="bg-green-800 px-4 py-2 rounded-full font-semibold mr-4">
+                        <i class="fas fa-coins mr-2"></i><span id="points-count">350</span> pts
+                    </div>
+                    <button id="logout-btn" class="bg-white text-green-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Profile Content -->
+    <section class="container mx-auto py-8 px-4">
+        <div class="max-w-6xl mx-auto">
+            <!-- Profile Header -->
+            <div class="profile-card flex flex-col md:flex-row items-center md:items-start mb-8">
+                <div class="w-32 h-32 bg-green-100 rounded-full flex items-center justify-center mb-4 md:mb-0 md:mr-8">
+                    <i class="fas fa-user-circle text-5xl text-green-600"></i>
+                </div>
+                <div class="text-center md:text-left">
+                    <h2 class="text-2xl font-bold text-gray-800" id="profile-name">User Name</h2>
+                    <p class="text-gray-600 mt-1" id="profile-email">user@example.com</p>
+                    <div class="flex items-center justify-center md:justify-start mt-3">
+                        <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium mr-2" id="user-level">
+                            Level 1 Eco-Beginner
+                        </div>
+                        <div class="text-gray-500 text-sm">
+                            <i class="fas fa-coins mr-1 text-yellow-500"></i> <span id="total-points">350</span> points
+                        </div>
+                    </div>
+                    <div class="mt-4 w-full md:w-80">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="level-progress" class="bg-green-600 h-2.5 rounded-full progress-bar" style="width: 0%"></div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1" id="next-level-text">0/100 points to next level</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Система уровней и прогресса -->
+            <div class="profile-card mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Level Progress & Rewards</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                    <div class="text-center p-4 bg-green-50 rounded-lg level-indicator active" data-level="1">
+                        <div class="text-2xl mb-2">🌱</div>
+                        <div class="font-semibold">Eco-Beginner</div>
+                        <div class="text-sm text-gray-600">0 pts</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg level-indicator" data-level="2">
+                        <div class="text-2xl mb-2">♻️</div>
+                        <div class="font-semibold">Eco-Enthusiast</div>
+                        <div class="text-sm text-gray-600">100 pts</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg level-indicator" data-level="3">
+                        <div class="text-2xl mb-2">🌍</div>
+                        <div class="font-semibold">Green Warrior</div>
+                        <div class="text-sm text-gray-600">300 pts</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg level-indicator" data-level="4">
+                        <div class="text-2xl mb-2">🏆</div>
+                        <div class="font-semibold">Eco-Champion</div>
+                        <div class="text-sm text-gray-600">600 pts</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg level-indicator" data-level="5">
+                        <div class="text-2xl mb-2">🛡️</div>
+                        <div class="font-semibold">Planet Guardian</div>
+                        <div class="text-sm text-gray-600">1000 pts</div>
+                    </div>
+                </div>
+
+                <div id="level-rewards" class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-blue-800 mb-2">Current Level Rewards:</h4>
+                    <p class="text-blue-700" id="rewards-list">No rewards yet. Reach level 2 to unlock discounts!</p>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="profile-stats-grid mb-8">
+                <div class="profile-card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Weekly Progress</h3>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-gray-600">Carbon Footprint Reduced</span>
+                        <span class="font-semibold">18 kg</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                        <div class="bg-green-600 h-2.5 rounded-full progress-bar" style="width: 75%"></div>
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-gray-600">Challenges Completed</span>
+                        <span class="font-semibold">3/5</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-green-600 h-2.5 rounded-full progress-bar" style="width: 60%"></div>
+                    </div>
+                </div>
+
+                <div class="profile-card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Eco Impact</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-600">Plastic Waste Saved</span>
+                                <span class="font-semibold">4.2 kg</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-green-600 h-2.5 rounded-full progress-bar" style="width: 70%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-600">Water Saved</span>
+                                <span class="font-semibold">120 L</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-green-600 h-2.5 rounded-full progress-bar" style="width: 40%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-gray-600">Trees Planted</span>
+                                <span class="font-semibold">2</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-green-600 h-2.5 rounded-full progress-bar" style="width: 20%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Community Rank</h3>
+                    <div class="flex flex-col items-center justify-center py-4">
+                        <div class="text-5xl font-bold text-green-600 mb-2">#42</div>
+                        <p class="text-gray-600 text-center">in your local community</p>
+                        <div class="mt-4 flex items-center">
+                            <div class="w-4 h-4 bg-green-500 rounded-full mr-1"></div>
+                            <div class="w-4 h-4 bg-green-500 rounded-full mr-1"></div>
+                            <div class="w-4 h-4 bg-green-500 rounded-full mr-1"></div>
+                            <div class="w-4 h-4 bg-green-300 rounded-full mr-1"></div>
+                            <div class="w-4 h-4 bg-gray-300 rounded-full"></div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">4/5 stars</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievements Section -->
+            <div class="profile-card mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Your Eco-Achievements</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="achievements-container">
+                    <!-- Достижения будут загружены через JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Recent Activities -->
+            <div class="profile-card">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Recent Activities</h3>
+                <div class="space-y-4" id="activities-list">
+                    <!-- Активности будут загружены через JavaScript -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Контейнер для уведомлений -->
+    <div id="notifications-container"></div>
+
+    <script>
+        // Система уровней
+        const levelSystem = {
+            levels: {
+                1: { points: 0, title: "Eco-Beginner", badge: "🌱", rewards: [] },
+                2: { points: 100, title: "Eco-Enthusiast", badge: "♻️", rewards: ["5% discount at partners"] },
+                3: { points: 300, title: "Green Warrior", badge: "🌍", rewards: ["10% discount", "Early access to events"] },
+                4: { points: 600, title: "Eco-Champion", badge: "🏆", rewards: ["15% discount", "Special badge", "Featured on community page"] },
+                5: { points: 1000, title: "Planet Guardian", badge: "🛡️", rewards: ["20% discount", "All previous rewards", "Community leader status"] }
+            },
+
+            achievements: {
+                first_report: { name: "First Report", description: "Submit your first environmental issue", points: 25, icon: "📝", unlocked: false },
+                cleanup_hero: { name: "Cleanup Hero", description: "Participate in 5 cleanup events", points: 100, icon: "🧹", unlocked: false },
+                tree_planter: { name: "Tree Planter", description: "Plant 10 trees", points: 150, icon: "🌳", unlocked: false },
+                community_leader: { name: "Community Leader", description: "Verify 20 reports", points: 200, icon: "👑", unlocked: false },
+                eco_educator: { name: "Eco Educator", description: "Complete all eco-knowledge quizzes", points: 75, icon: "📚", unlocked: false },
+                plastic_warrior: { name: "Plastic Warrior", description: "Collect 50 plastic items", points: 80, icon: "🥤", unlocked: false },
+                water_saver: { name: "Water Saver", description: "Save 1000L of water", points: 90, icon: "💧", unlocked: false }
+            },
+
+            init() {
+                this.loadUserData();
+                this.updateDisplay();
+                this.showWelcomeNotification();
+            },
+
+            loadUserData() {
+                this.userPoints = parseInt(localStorage.getItem('userPoints') || '350');
+                this.userLevel = this.calculateCurrentLevel();
+                this.userAchievements = JSON.parse(localStorage.getItem('userAchievements') || '{}');
+                this.userActivities = JSON.parse(localStorage.getItem('userActivities') || '[]');
+                
+                // Если активностей нет, создаем демо-данные
+                if (this.userActivities.length === 0) {
+                    this.userActivities = [
+                        { action: 'COMPLETE_CHALLENGE', description: 'Completed "Plastic-Free Challenge"', points: 50, timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+                        { action: 'SHARE_ACHIEVEMENT', description: 'Shared eco-tip with community', points: 25, timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+                        { action: 'ATTEND_EVENT', description: 'Planted a tree in local park', points: 100, timestamp: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() }
+                    ];
+                    localStorage.setItem('userActivities', JSON.stringify(this.userActivities));
+                }
+            },
+
+            calculateCurrentLevel() {
+                let currentLevel = 1;
+                for (const [level, data] of Object.entries(this.levels)) {
+                    if (this.userPoints >= data.points) {
+                        currentLevel = parseInt(level);
+                    } else {
+                        break;
+                    }
+                }
+                return currentLevel;
+            },
+
+            updateDisplay() {
+                // Обновление очков
+                document.getElementById('points-count').textContent = this.userPoints;
+                document.getElementById('total-points').textContent = this.userPoints;
+
+                // Обновление уровня
+                const currentLevelData = this.levels[this.userLevel];
+                document.getElementById('user-level').textContent = `Level ${this.userLevel} ${currentLevelData.title}`;
+
+                // Обновление прогресс-бара
+                const nextLevelData = this.levels[this.userLevel + 1];
+                const progress = nextLevelData ? 
+                    ((this.userPoints - currentLevelData.points) / (nextLevelData.points - currentLevelData.points)) * 100 : 100;
+                
+                document.getElementById('level-progress').style.width = `${progress}%`;
+                document.getElementById('next-level-text').textContent = 
+                    nextLevelData ? 
+                    `${this.userPoints - currentLevelData.points}/${nextLevelData.points - currentLevelData.points} points to next level` :
+                    'Maximum level reached!';
+
+                // Обновление индикаторов уровней
+                document.querySelectorAll('.level-indicator').forEach(indicator => {
+                    const level = parseInt(indicator.dataset.level);
+                    indicator.classList.remove('active', 'bg-green-100', 'border-2', 'border-green-500');
+                    if (level === this.userLevel) {
+                        indicator.classList.add('active', 'bg-green-100', 'border-2', 'border-green-500');
+                    } else if (level < this.userLevel) {
+                        indicator.classList.add('bg-green-50');
+                    }
+                });
+
+                // Обновление наград
+                document.getElementById('rewards-list').textContent = 
+                    currentLevelData.rewards.length > 0 ? 
+                    currentLevelData.rewards.join(', ') : 
+                    'No rewards yet. Reach level 2 to unlock discounts!';
+
+                // Загрузка достижений
+                this.loadAchievements();
+                
+                // Загрузка активностей
+                this.loadActivities();
+            },
+
+            loadAchievements() {
+                const container = document.getElementById('achievements-container');
+                container.innerHTML = '';
+
+                Object.entries(this.achievements).forEach(([key, achievement]) => {
+                    const isUnlocked = this.userAchievements[key] || Math.random() > 0.5; // Демо-данные
+                    
+                    const achievementCard = document.createElement('div');
+                    achievementCard.className = `flex flex-col items-center p-4 rounded-lg achievement-card ${
+                        isUnlocked ? 'bg-green-50' : 'bg-gray-100 locked'
+                    }`;
+                    
+                    achievementCard.innerHTML = `
+                        <div class="text-2xl mb-2">${achievement.icon}</div>
+                        <span class="text-sm font-medium text-center">${achievement.name}</span>
+                        <span class="text-xs ${isUnlocked ? 'text-green-500' : 'text-gray-400'} mt-1">
+                            ${isUnlocked ? 'Earned' : 'Locked'}
+                        </span>
+                        ${isUnlocked ? `<span class="text-xs text-yellow-600 mt-1">+${achievement.points} pts</span>` : ''}
+                    `;
+
+                    achievementCard.addEventListener('click', () => {
+                        this.showAchievementDetails(achievement, isUnlocked);
+                    });
+
+                    container.appendChild(achievementCard);
+                });
+            },
+
+            loadActivities() {
+                const container = document.getElementById('activities-list');
+                container.innerHTML = '';
+
+                this.userActivities.forEach(activity => {
+                    const activityElement = document.createElement('div');
+                    activityElement.className = 'flex items-start';
+                    
+                    const icon = this.getActivityIcon(activity.action);
+                    const date = new Date(activity.timestamp).toLocaleDateString();
+                    
+                    activityElement.innerHTML = `
+                        <div class="flex-shrink-0 h-10 w-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 mr-4">
+                            <i class="fas fa-${icon}"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">${activity.description}</p>
+                            <p class="text-sm text-gray-500">Earned ${activity.points} points • ${date}</p>
+                        </div>
+                    `;
+
+                    container.appendChild(activityElement);
+                });
+            },
+
+            getActivityIcon(action) {
+                const icons = {
+                    'REPORT_ISSUE': 'exclamation-triangle',
+                    'VERIFY_ISSUE': 'check-circle',
+                    'COMPLETE_CHALLENGE': 'check',
+                    'SHARE_ACHIEVEMENT': 'share-alt',
+                    'ATTEND_EVENT': 'tree',
+                    'PLANT_TREE': 'seedling'
+                };
+                return icons[action] || 'star';
+            },
+
+            showAchievementDetails(achievement, unlocked) {
+                this.showNotification(
+                    unlocked ? 
+                    `🎉 Achievement: ${achievement.name} - ${achievement.description} (+${achievement.points} pts)` :
+                    `🔒 Locked: ${achievement.name} - ${achievement.description}`,
+                    unlocked ? 'success' : 'info'
+                );
+            },
+
+            // Система уведомлений
+            showNotification(message, type = 'info', duration = 4000) {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-${this.getNotificationIcon(type)} mr-2"></i>
+                            <span>${message}</span>
+                        </div>
+                        <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+
+                document.getElementById('notifications-container').appendChild(notification);
+
+                // Анимация появления
+                setTimeout(() => notification.classList.add('show'), 100);
+
+                // Автоматическое скрытие
+                if (duration > 0) {
+                    setTimeout(() => {
+                        notification.classList.remove('show');
+                        setTimeout(() => notification.remove(), 300);
+                    }, duration);
+                }
+            },
+
+            getNotificationIcon(type) {
+                const icons = {
+                    success: 'check-circle',
+                    error: 'exclamation-triangle',
+                    warning: 'exclamation-circle',
+                    info: 'info-circle'
+                };
+                return icons[type] || 'info-circle';
+            },
+
+            showWelcomeNotification() {
+                setTimeout(() => {
+                    this.showNotification('🚀 Welcome to your enhanced EcoYard profile! Explore your achievements and level progress.', 'success', 5000);
+                }, 1000);
+            },
+
+            // Функция для добавления очков (для демонстрации)
+            addDemoPoints(points) {
+                this.userPoints += points;
+                localStorage.setItem('userPoints', this.userPoints.toString());
+                
+                const oldLevel = this.userLevel;
+                this.userLevel = this.calculateCurrentLevel();
+                
+                this.updateDisplay();
+                
+                if (this.userLevel > oldLevel) {
+                    this.showNotification(
+                        `🎉 Level Up! You're now ${this.levels[this.userLevel].title} ${this.levels[this.userLevel].badge}`,
+                        'success',
+                        5000
+                    );
+                }
+                
+                this.showNotification(`+${points} points added! Keep up the great work! 🌟`, 'success');
+            }
+        };
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Проверка авторизации
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const userEmail = localStorage.getItem('userEmail');
+            const userName = localStorage.getItem('userName');
+            
+            if (isLoggedIn !== 'true') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Обновление информации профиля
+            if (userName) {
+                document.getElementById('profile-name').textContent = userName;
+            }
+            if (userEmail) {
+                document.getElementById('profile-email').textContent = userEmail;
+            }
+
+            // Инициализация системы уровней
+            levelSystem.init();
+
+            // Обработчик выхода
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('userName');
+                window.location.href = 'login.html';
+            });
+
+            // Демо-кнопка для добавления очков (можно удалить в продакшене)
+            const demoButton = document.createElement('button');
+            demoButton.className = 'fixed bottom-4 right-4 bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-700 transition z-50';
+            demoButton.innerHTML = '<i class="fas fa-plus"></i>';
+            demoButton.title = 'Add 50 demo points';
+            demoButton.addEventListener('click', () => levelSystem.addDemoPoints(50));
+            document.body.appendChild(demoButton);
+
+            // PWA функциональность
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            }
+        });
+
+        // Service Worker для PWA
+        const registerServiceWorker = async () => {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    if (registration.installing) {
+                        console.log('Service worker installing');
+                    } else if (registration.waiting) {
+                        console.log('Service worker installed');
+                    } else if (registration.active) {
+                        console.log('Service worker active');
+                    }
+                } catch (error) {
+                    console.error(`Registration failed with ${error}`);
+                }
+            }
+        };
+
+        // Создаем простой Service Worker
+        const swContent = `
+            self.addEventListener('install', (event) => {
+                console.log('Service Worker installing.');
+            });
+
+            self.addEventListener('fetch', (event) => {
+                event.respondWith(
+                    caches.match(event.request).then((response) => {
+                        return response || fetch(event.request);
+                    })
+                );
+            });
+        `;
+
+        // Создаем blob URL для Service Worker
+        const blob = new Blob([swContent], { type: 'application/javascript' });
+        const swURL = URL.createObjectURL(blob);
+
+        // Регистрируем Service Worker
+        registerServiceWorker();
+    </script>
+</body>
+</html>
