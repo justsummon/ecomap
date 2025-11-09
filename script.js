@@ -95,6 +95,7 @@ function createCustomIcon(type, severity = 'medium') {
     
     return icons[type] || icons['trash'];
 }
+
 // ===== СИСТЕМА ПЕРЕВОДОВ =====
 const translations = {
     en: {
@@ -325,14 +326,14 @@ const translations = {
         "our-partners": "Біздің серіктестер",
         
         // Rewards Page
-        "rewards-title": "Экологиялық әрекеттер үшін марапаттар жинаңыз",
+        "rewards-title": "Зарабатывайте награды за экологические действия",
         "cleanup-participation": "Тазартуға қатысу",
         "tree-planting": "Ағаш отырғызу",
         "eco-challenges": "Эко-сынақтар",
         "your-progress": "Сіздің прогрессіңіз",
         "points-to-next": "ұпай келесі марапатқа дейін",
         "unlock-reward": "Алғашқы марапатты алу үшін 500 ұпай жинаңыз!",
-        "redeem-points": "Біздің серіктестерден ұпайларды айырбастаңыз"
+        "redeem-points": "Обменяйте очки у наших партнеров"
     }
 };
 
@@ -427,213 +428,116 @@ function initLanguageSystem() {
     });
 }
 
-// ===== ОСНОВНЫЕ ФУНКЦИИ КАРТЫ =====
-function loadScript(src) {
-    return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-    });
-}
+// ===== СИСТЕМА ФИЛЬТРОВ КАРТЫ =====
+let allMarkers = []; // Массив для хранения всех маркеров
+let currentMap; // Переменная для хранения объекта карты
 
-// Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        // Загрузка новых модулей
-        await loadScript('notifications.js');
-        await loadScript('level-system.js');
-        
-        console.log('Все модули загружены');
-    } catch (error) {
-        console.log('Ошибка загрузки модулей:', error);
-    }
-    
-    // Инициализация системы переводов ПЕРВОЙ
-    initLanguageSystem();
-    
-    // Остальная инициализация...
-    if (document.getElementById('map')) {
-        initMapWithEcoYardStyle();
-    }
-    
-    updateNavigation();
-    
-    if (typeof checkAuthState === 'function') {
-        checkAuthState();
-    }
-    
-    initBackToTop();
-    initMobileMenu();
-});
-
-// ... остальной ваш код остается без изменений ...
 function initMapWithEcoYardStyle() {
     if (!document.getElementById('map')) return;
 
-    // Убедитесь, что карта имеет правильные размеры
     const mapContainer = document.getElementById('map');
     mapContainer.style.height = '500px';
     mapContainer.style.width = '100%';
     
-    const map = L.map('map').setView([51.1605, 71.4704], 12);
+    currentMap = L.map('map').setView([51.1605, 71.4704], 12);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; EcoYard Community'
-    }).addTo(map);
+    }).addTo(currentMap);
 
     // Принудительно обновляем размер карты после загрузки
     setTimeout(() => {
-        map.invalidateSize();
+        currentMap.invalidateSize();
     }, 100);
 
     // Добавляем обработчик для ресайза окна
     window.addEventListener('resize', function() {
         setTimeout(() => {
-            map.invalidateSize();
+            currentMap.invalidateSize();
         }, 100);
     });
 
-    // ===== СИСТЕМА ОТЧЕТОВ О ПРОБЛЕМАХ =====
-    function initReportSystem() {
-        // Кнопка для сообщения о проблеме
-        const reportButton = L.control({position: 'topright'});
-        reportButton.onAdd = function(map) {
-            const div = L.DomUtil.create('div', 'report-button-container');
-            div.innerHTML = `
-                <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition duration-200 flex items-center"
-                        onclick="window.location.href='report-issue.html'">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                    Report Issue
-                </button>
-            `;
-            return div;
-        };
-        reportButton.addTo(map);
-
-        // Загрузка и отображение существующих отчетов
-        loadAndDisplayReports(map);
-    }
-
-    // Загрузка и отображение отчетов
-    function loadAndDisplayReports(map) {
-        const reports = JSON.parse(localStorage.getItem('ecoMapReports') || '[]');
-        
-        reports.forEach((report, index) => {
-            if (report.location && report.status !== 'resolved') {
-                const icon = getReportIcon(report.type, report.severity);
-                const marker = L.marker([report.location.lat, report.location.lng], {icon: icon})
-                    .addTo(map)
-                    .bindPopup(createReportPopup(report, index));
-                    
-                // Добавляем обработчик для слайдеров в отчетах
-                marker.on('popupopen', function() {
-                    initPopupSliders(this.getPopup());
-                });
-            }
-        });
-    }
-
-    // Получение иконки для типа отчета
-    function getReportIcon(type, severity) {
-        const size = [30, 30];
-        const severityColors = {
-            'low': '#10B981',
-            'medium': '#F59E0B', 
-            'high': '#F97316',
-            'critical': '#EF4444'
-        };
-        
-        const color = severityColors[severity] || '#EF4444';
-        
-        const icons = {
-            'trash': L.divIcon({
-                html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
-                    <i class="fas fa-trash"></i>
-                </div>`,
-                iconSize: size,
-                className: 'report-marker'
-            }),
-            'pollution': L.divIcon({
-                html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
-                    <i class="fas fa-smog"></i>
-                </div>`,
-                iconSize: size,
-                className: 'report-marker'
-            }),
-            'damage': L.divIcon({
-                html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
-                    <i class="fas fa-tree"></i>
-                </div>`,
-                iconSize: size,
-                className: 'report-marker'
-            }),
-            'other': L.divIcon({
-                html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>`,
-                iconSize: size,
-                className: 'report-marker'
-            })
-        };
-        
-        return icons[type] || icons['other'];
-    }
-
-    // Создание попапа для отчета
-    function createReportPopup(report, index) {
-        const statusBadge = report.status === 'verified' ? 
-            '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Verified</span>' :
-            '<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Pending</span>';
-        
-        const severityColors = {
-            'low': 'green-500',
-            'medium': 'yellow-500',
-            'high': 'orange-500',
-            'critical': 'red-500'
-        };
-        
-        const colorClass = severityColors[report.severity] || 'red-500';
-        
-        return `
-            <div class="report-popup p-3 max-w-xs">
-                <div class="flex justify-between items-start mb-2">
-                    <h4 class="font-bold text-gray-800">${report.title}</h4>
-                    ${statusBadge}
-                </div>
-                
-                <div class="flex items-center mb-2">
-                    <span class="inline-block w-3 h-3 rounded-full bg-${colorClass} mr-2"></span>
-                    <span class="text-sm text-gray-600 capitalize">${report.severity} severity</span>
-                </div>
-                
-                <p class="text-sm text-gray-600 mb-3">${report.description}</p>
-                
-                <div class="text-xs text-gray-500 mb-3">
-                    Reported: ${new Date(report.timestamp).toLocaleDateString()}
-                </div>
-                
-                <div class="flex space-x-2">
-                    <button class="flex-1 bg-green-600 text-white py-1 px-2 rounded text-sm hover:bg-green-700 transition"
-                            onclick="verifyReport(${index})">
-                        <i class="fas fa-check mr-1"></i> Verify
-                    </button>
-                    <button class="flex-1 bg-blue-600 text-white py-1 px-2 rounded text-sm hover:bg-blue-700 transition"
-                            onclick="resolveReport(${index})">
-                        <i class="fas fa-flag mr-1"></i> Resolve
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-
     // Инициализация системы отчетов
-    initReportSystem();
+    initReportSystem(currentMap);
+    
+    // Добавление маркеров
+    addAllMarkers(currentMap);
+    
+    // Инициализация фильтров
+    initMapFilters();
+}
 
-    // ===== СУЩЕСТВУЮЩИЕ МАРКЕРЫ (УДАЛЕНИЕ createEcoYardMarker) =====
-    // УДАЛЕНА: const createEcoYardMarker = (color, emoji) => { ... };
+// ===== ИНИЦИАЛИЗАЦИЯ ФИЛЬТРОВ =====
+function initMapFilters() {
+    const filterCheckboxes = [
+        'trash-spots',
+        'cleaned-areas', 
+        'planting-zones',
+        'polluted-zones',
+        'events'
+    ];
 
+    filterCheckboxes.forEach(checkboxId => {
+        const checkbox = document.getElementById(checkboxId);
+        if (checkbox) {
+            checkbox.addEventListener('change', applyMapFilters);
+        }
+    });
+}
+
+// ===== ПРИМЕНЕНИЕ ФИЛЬТРОВ =====
+function applyMapFilters() {
+    // Получаем состояния всех чекбоксов
+    const filters = {
+        trash: document.getElementById('trash-spots')?.checked || false,
+        cleanup: document.getElementById('cleaned-areas')?.checked || false,
+        planting: document.getElementById('planting-zones')?.checked || false,
+        pollution: document.getElementById('polluted-zones')?.checked || false,
+        event: document.getElementById('events')?.checked || false
+    };
+
+    // Сначала скрываем все маркеры
+    allMarkers.forEach(marker => {
+        if (currentMap && marker) {
+            currentMap.removeLayer(marker);
+        }
+    });
+
+    // Показываем только те маркеры, которые соответствуют активным фильтрам
+    allMarkers.forEach(marker => {
+        if (!marker) return;
+        
+        const markerType = marker.options.markerType;
+        
+        if ((markerType === 'trash' && filters.trash) ||
+            (markerType === 'cleanup' && filters.cleanup) ||
+            (markerType === 'planting' && filters.planting) ||
+            (markerType === 'pollution' && filters.pollution) ||
+            (markerType === 'event' && filters.event)) {
+            
+            if (currentMap) {
+                marker.addTo(currentMap);
+            }
+        }
+    });
+}
+
+// ===== ДОБАВЛЕНИЕ ВСЕХ МАРКЕРОВ =====
+function addAllMarkers(map) {
+    allMarkers = []; // Очищаем массив
+
+    // Добавляем стандартные маркеры
+    addStandardMarkers(map);
+    
+    // Добавляем маркеры отчетов
+    loadAndDisplayReports(map);
+    
+    // Добавляем специальные маркеры
+    addSpecialMarkers(map);
+}
+
+// ===== СПЕЦИАЛЬНЫЕ МАРКЕРЫ =====
+function addSpecialMarkers(map) {
     const locations = [
         {
             coords: [51.1475, 71.4225],
@@ -644,7 +548,7 @@ function initMapWithEcoYardStyle() {
             points: 50
         },
         {
-            coords: [51.1286, 71.4307], // Координаты стадиона им. Мунайтпасова на Кенесары
+            coords: [51.1286, 71.4307],
             type: 'cleanup',
             title: 'Стадион им. Мунайтпасова',
             description: 'This stadium area was transformed by 22 volunteers last month. See the amazing cleanup results!',
@@ -663,11 +567,11 @@ function initMapWithEcoYardStyle() {
     ];
 
     locations.forEach(location => {
-        // ИЗМЕНЕНИЕ: Используем createCustomIcon вместо createEcoYardMarker
-        const icon = createCustomIcon(location.type, 'high'); // Используем 'high' для примера
+        const icon = createCustomIcon(location.type, 'high');
         
         const marker = L.marker(location.coords, {
-            icon: icon
+            icon: icon,
+            markerType: location.type // Добавляем тип маркера для фильтрации
         }).addTo(map);
 
         let popupContent = `
@@ -696,18 +600,279 @@ function initMapWithEcoYardStyle() {
         `;
 
         marker.bindPopup(createBeautifulPopup(popupContent, location.type));
+        
+        // Добавляем в массив всех маркеров
+        allMarkers.push(marker);
 
         // Добавляем обработчик для слайдеров
         marker.on('popupopen', function() {
             initPopupSliders(this.getPopup());
         });
     });
+}
 
-    // Добавление стандартных маркеров с кастомными иконками
-    addStandardMarkers(map);
+// ===== СТАНДАРТНЫЕ МАРКЕРЫ С КАСТОМНЫМИ ИКОНКАМИ =====
+function addStandardMarkers(map) {
+    // Данные маркеров
+    const trashSpots = [
+        { lat: 51.1475, lng: 71.4225, title: "Park Trash Accumulation", description: "Plastic bottles and food wrappers", severity: "medium" },
+        { lat: 51.1520, lng: 71.4380, title: "Alleyway Dumping", description: "Furniture and household waste", severity: "high" },
+        { lat: 51.1650, lng: 71.4450, title: "Riverbank Pollution", description: "Plastic bags and containers", severity: "high" },
+        { lat: 51.1800, lng: 71.4300, title: "Street Litter", description: "Cigarette butts and small trash", severity: "low" }
+    ];
+
+    const cleanedAreas = [
+        { lat: 51.1400, lng: 71.4100, title: "Central Park Cleanup", description: "Completed June 5, 2025", volunteers: 15 },
+        { lat: 51.1550, lng: 71.4500, title: "Esil River Cleanup", description: "Completed May 28, 2025", volunteers: 22 }
+    ];
+
+    const plantingZones = [
+        { lat: 51.1700, lng: 71.4250, title: "Future Tree Planting", description: "50 native trees planned", date: "June 22, 2025" },
+        { lat: 51.1600, lng: 71.4400, title: "Community Garden", description: "Vegetables and flowers", date: "Ongoing" }
+    ];
+
+    const events = [
+        { lat: 51.1500, lng: 71.4350, title: "Park Cleanup Event", description: "June 15, 9AM-12PM", participants: 23 },
+        { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
+    ];
+
+    const pollutionZones = [
+        { lat: 51.1900, lng: 71.4000, title: "Industrial Zone", description: "Area with air quality concerns", radius: 500 },
+        { lat: 51.1450, lng: 71.4150, title: "Water Pollution", description: "Former polluted area", radius: 300 }
+    ];
+
+    // Добавление маркеров мусорных точек
+    trashSpots.forEach(spot => {
+        const marker = L.marker([spot.lat, spot.lng], { 
+            icon: createCustomIcon('trash', spot.severity.toLowerCase()),
+            markerType: 'trash'
+        })
+            .addTo(map)
+            .bindPopup(`
+                <div class="p-2">
+                    <b>${spot.title}</b><br>
+                    ${spot.description}<br>
+                    <span class="text-red-600">Severity: ${spot.severity}</span>
+                </div>
+            `);
+        allMarkers.push(marker);
+    });
+
+    // Добавление маркеров очищенных зон
+    cleanedAreas.forEach(area => {
+        const marker = L.marker([area.lat, area.lng], { 
+            icon: createCustomIcon('cleanup'),
+            markerType: 'cleanup'
+        })
+            .addTo(map)
+            .bindPopup(`
+                <div class="p-2">
+                    <b>${area.title}</b><br>
+                    ${area.description}<br>
+                    Volunteers: ${area.volunteers}<br>
+                    <span class="text-green-600">Area Cleaned</span>
+                </div>
+            `);
+        allMarkers.push(marker);
+    });
+
+    // Добавление маркеров зон посадки
+    plantingZones.forEach(zone => {
+        const marker = L.marker([zone.lat, zone.lng], { 
+            icon: createCustomIcon('planting'),
+            markerType: 'planting'
+        })
+            .addTo(map)
+            .bindPopup(`
+                <div class="p-2">
+                    <b>${zone.title}</b><br>
+                    ${zone.description}<br>
+                    Date: ${zone.date}<br>
+                    <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>
+                </div>
+            `);
+        allMarkers.push(marker);
+    });
+
+    // Добавление маркеров событий
+    events.forEach(event => {
+        const marker = L.marker([event.lat, event.lng], { 
+            icon: createCustomIcon('event'),
+            markerType: 'event'
+        })
+            .addTo(map)
+            .bindPopup(`
+                <div class="p-2">
+                    <b>${event.title}</b><br>
+                    ${event.description}<br>
+                    Participants: ${event.participants}<br>
+                    <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>
+                </div>
+            `);
+        allMarkers.push(marker);
+    });
+
+    // Добавление кругов для загрязненных зон
+    pollutionZones.forEach(zone => {
+        const circle = L.circle([zone.lat, zone.lng], {
+            color: 'orange',
+            fillColor: 'yellow',
+            fillOpacity: 0.5,
+            radius: zone.radius
+        })
+        .addTo(map)
+        .bindPopup(`<b>${zone.title}</b><br>${zone.description}`);
+        
+        // Добавляем тип для фильтрации
+        circle.options.markerType = 'pollution';
+        allMarkers.push(circle);
+    });
+}
+
+// ===== СИСТЕМА ОТЧЕТОВ =====
+function initReportSystem(map) {
+    // Кнопка для сообщения о проблеме
+    const reportButton = L.control({position: 'topright'});
+    reportButton.onAdd = function(map) {
+        const div = L.DomUtil.create('div', 'report-button-container');
+        div.innerHTML = `
+            <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition duration-200 flex items-center"
+                    onclick="window.location.href='report-issue.html'">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Report Issue
+            </button>
+        `;
+        return div;
+    };
+    reportButton.addTo(map);
+}
+
+function loadAndDisplayReports(map) {
+    const reports = JSON.parse(localStorage.getItem('ecoMapReports') || '[]');
     
-    // Инициализация слайдеров
-    initSliders();
+    reports.forEach((report, index) => {
+        if (report.location && report.status !== 'resolved') {
+            const icon = getReportIcon(report.type, report.severity);
+            const marker = L.marker([report.location.lat, report.location.lng], {
+                icon: icon,
+                markerType: getReportMarkerType(report.type)
+            })
+                .addTo(map)
+                .bindPopup(createReportPopup(report, index));
+                
+            allMarkers.push(marker);
+            
+            // Добавляем обработчик для слайдеров в отчетах
+            marker.on('popupopen', function() {
+                initPopupSliders(this.getPopup());
+            });
+        }
+    });
+}
+
+// ===== ПОЛУЧЕНИЕ ТИПА МАРКЕРА ДЛЯ ОТЧЕТА =====
+function getReportMarkerType(reportType) {
+    const typeMap = {
+        'trash': 'trash',
+        'pollution': 'pollution',
+        'damage': 'pollution',
+        'other': 'trash'
+    };
+    
+    return typeMap[reportType] || 'trash';
+}
+
+// Получение иконки для типа отчета
+function getReportIcon(type, severity) {
+    const size = [30, 30];
+    const severityColors = {
+        'low': '#10B981',
+        'medium': '#F59E0B', 
+        'high': '#F97316',
+        'critical': '#EF4444'
+    };
+    
+    const color = severityColors[severity] || '#EF4444';
+    
+    const icons = {
+        'trash': L.divIcon({
+            html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
+                <i class="fas fa-trash"></i>
+            </div>`,
+            iconSize: size,
+            className: 'report-marker'
+        }),
+        'pollution': L.divIcon({
+            html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
+                <i class="fas fa-smog"></i>
+            </div>`,
+            iconSize: size,
+            className: 'report-marker'
+        }),
+        'damage': L.divIcon({
+            html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
+                <i class="fas fa-tree"></i>
+            </div>`,
+            iconSize: size,
+            className: 'report-marker'
+        }),
+        'other': L.divIcon({
+            html: `<div style="background-color: ${color};" class="rounded-full w-8 h-8 flex items-center justify-center text-white">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>`,
+            iconSize: size,
+            className: 'report-marker'
+        })
+    };
+    
+    return icons[type] || icons['other'];
+}
+
+// Создание попапа для отчета
+function createReportPopup(report, index) {
+    const statusBadge = report.status === 'verified' ? 
+        '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Verified</span>' :
+        '<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Pending</span>';
+    
+    const severityColors = {
+        'low': 'green-500',
+        'medium': 'yellow-500',
+        'high': 'orange-500',
+        'critical': 'red-500'
+    };
+    
+    const colorClass = severityColors[report.severity] || 'red-500';
+    
+    return `
+        <div class="report-popup p-3 max-w-xs">
+            <div class="flex justify-between items-start mb-2">
+                <h4 class="font-bold text-gray-800">${report.title}</h4>
+                ${statusBadge}
+            </div>
+            
+            <div class="flex items-center mb-2">
+                <span class="inline-block w-3 h-3 rounded-full bg-${colorClass} mr-2"></span>
+                <span class="text-sm text-gray-600 capitalize">${report.severity} severity</span>
+            </div>
+            
+            <p class="text-sm text-gray-600 mb-3">${report.description}</p>
+            
+            <div class="text-xs text-gray-500 mb-3">
+                Reported: ${new Date(report.timestamp).toLocaleDateString()}
+            </div>
+            
+            <div class="flex space-x-2">
+                <button class="flex-1 bg-green-600 text-white py-1 px-2 rounded text-sm hover:bg-green-700 transition"
+                        onclick="verifyReport(${index})">
+                    <i class="fas fa-check mr-1"></i> Verify
+                </button>
+                <button class="flex-1 bg-blue-600 text-white py-1 px-2 rounded text-sm hover:bg-blue-700 transition"
+                        onclick="resolveReport(${index})">
+                    <i class="fas fa-flag mr-1"></i> Resolve
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 // ===== ФУНКЦИИ ДЛЯ УПРАВЛЕНИЯ ОТЧЕТАМИ =====
@@ -876,109 +1041,11 @@ window.handleLocationAction = function(locationType, points, description) {
     alert(`+${points} points for: ${description}`);
 };
 
-// ===== СТАНДАРТНЫЕ МАРКЕРЫ С КАСТОМНЫМИ ИКОНКАМИ =====
-function addStandardMarkers(map) {
-    // Данные маркеров
-    const trashSpots = [
-        { lat: 51.1475, lng: 71.4225, title: "Park Trash Accumulation", description: "Plastic bottles and food wrappers", severity: "medium" },
-        { lat: 51.1520, lng: 71.4380, title: "Alleyway Dumping", description: "Furniture and household waste", severity: "high" },
-        { lat: 51.1650, lng: 71.4450, title: "Riverbank Pollution", description: "Plastic bags and containers", severity: "high" },
-        { lat: 51.1800, lng: 71.4300, title: "Street Litter", description: "Cigarette butts and small trash", severity: "low" }
-    ];
-
-    const cleanedAreas = [
-        { lat: 51.1400, lng: 71.4100, title: "Central Park Cleanup", description: "Completed June 5, 2025", volunteers: 15 },
-        { lat: 51.1550, lng: 71.4500, title: "Esil River Cleanup", description: "Completed May 28, 2025", volunteers: 22 }
-    ];
-
-    const plantingZones = [
-        { lat: 51.1700, lng: 71.4250, title: "Future Tree Planting", description: "50 native trees planned", date: "June 22, 2025" },
-        { lat: 51.1600, lng: 71.4400, title: "Community Garden", description: "Vegetables and flowers", date: "Ongoing" }
-    ];
-
-    const events = [
-        { lat: 51.1500, lng: 71.4350, title: "Park Cleanup Event", description: "June 15, 9AM-12PM", participants: 23 },
-        { lat: 51.1750, lng: 71.4550, title: "Eco Workshop", description: "June 30, 6PM-8PM", participants: 18 }
-    ];
-
-    // Добавление маркеров с кастомными иконками
-    trashSpots.forEach(spot => {
-        L.marker([spot.lat, spot.lng], { 
-            icon: createCustomIcon('trash', spot.severity.toLowerCase())
-        })
-            .addTo(map)
-            .bindPopup(`
-                <div class="p-2">
-                    <b>${spot.title}</b><br>
-                    ${spot.description}<br>
-                    <span class="text-red-600">Severity: ${spot.severity}</span>
-                </div>
-            `);
-    });
-
-    cleanedAreas.forEach(area => {
-        L.marker([area.lat, area.lng], { 
-            icon: createCustomIcon('cleanup')
-        })
-            .addTo(map)
-            .bindPopup(`
-                <div class="p-2">
-                    <b>${area.title}</b><br>
-                    ${area.description}<br>
-                    Volunteers: ${area.volunteers}<br>
-                    <span class="text-green-600">Area Cleaned</span>
-                </div>
-            `);
-    });
-
-    plantingZones.forEach(zone => {
-        L.marker([zone.lat, zone.lng], { 
-            icon: createCustomIcon('planting')
-        })
-            .addTo(map)
-            .bindPopup(`
-                <div class="p-2">
-                    <b>${zone.title}</b><br>
-                    ${zone.description}<br>
-                    Date: ${zone.date}<br>
-                    <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">Join Planting</button>
-                </div>
-            `);
-    });
-
-    events.forEach(event => {
-        L.marker([event.lat, event.lng], { 
-            icon: createCustomIcon('event')
-        })
-            .addTo(map)
-            .bindPopup(`
-                <div class="p-2">
-                    <b>${event.title}</b><br>
-                    ${event.description}<br>
-                    Participants: ${event.participants}<br>
-                    <button class="mt-2 bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition">RSVP</button>
-                </div>
-            `);
-    });
-
-    // Добавление кругов
-    L.circle([51.1900, 71.4000], {
-        color: 'orange',
-        fillColor: 'yellow',
-        fillOpacity: 0.5,
-        radius: 500
-    }).addTo(map).bindPopup("<b>Industrial Zone</b><br>Area with air quality concerns");
-
-    L.circle([51.1450, 71.4150], {
-        color: 'blue',
-        fillColor: 'cyan',
-        fillOpacity: 0.5,
-        radius: 300
-    }).addTo(map).bindPopup("<b>Improved Zone</b><br>Former polluted area now restored by volunteers");
-}
-
 // ===== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ =====
 document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация системы переводов ПЕРВОЙ
+    initLanguageSystem();
+    
     // Инициализация карты
     if (document.getElementById('map')) {
         initMapWithEcoYardStyle();
@@ -1043,6 +1110,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
 // ===== ОБРАБОТЧИК КНОПКИ "REPORT ISSUE" =====
 document.addEventListener('DOMContentLoaded', function() {
     const reportIssueBtn = document.getElementById('report-issue-btn');
@@ -1080,6 +1148,7 @@ function handleMapErrors() {
         }, 2000);
     }
 }
+
 // Закрытие модального окна при клике вне его
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('loginModal');
